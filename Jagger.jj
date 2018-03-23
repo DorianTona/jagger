@@ -24,7 +24,7 @@ TOKEN:
 |   < EOL: "\n" >                             // End of line.
 }
 
-// Main lopp: read expressions on a line until end of file.
+// Main loop: read expressions on a line until end of file.
 //     mainloop → (expression <EOL>)* <EOF>
 void mainloop():
 { double a; }
