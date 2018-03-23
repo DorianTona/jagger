@@ -5,10 +5,12 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
+	Exp.java \
 	Add.java \
-	EXP.java \
+	Sub.java \
 	Mul.java \
-	NUM.java \
+	Div.java\
+	Num.java \
 	PrettyPrinter.java \
 	Visitor.java 
 

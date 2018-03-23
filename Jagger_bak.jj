@@ -27,47 +27,43 @@ TOKEN:
 // Main loop: read expressions on a line until end of file.
 //     mainloop → (expression <EOL>)* <EOF>
 void mainloop():
-{ Exp a; }
+{ double a; }
 {
     (
-      a=expression() <EOL> {
-        PrettyPrinter pp = new PrettyPrinter();
-        pp.print(a);
-        System.out.println();
-      }
+      a=expression() <EOL> { System.out.println(a); }
     )*
     <EOF>
 }
 
 // Expression (the axiom).
 // E -> T ('+'T | '-'T)*
-Exp expression():
-{ Exp a,b; }
+double expression():
+{ double a,b; }
 {
     a=term()
     (
-      "+" b=expression() { return new Add(a,b); }
-    | "-" b=expression() { return new Sub(a,b); }
+      "+" b=expression() { a += b; }
+    | "-" b=expression() { a -= b; }
     )? { return a; }
 }
 
 // Term.
 // T -> F ('*'F | '/'F)*
-Exp term():
-{ Exp a,b; }
+double term():
+{ double a,b; }
 {
     a=factor()
     (
-      "*" b=factor() { return new Mul(a,b); }
-    | "/" b=factor() { return new Div(a,b); }
+      "*" b=factor() { a *= b; }
+    | "/" b=factor() { a /= b; }
     )* { return a; }
 }
 
 // Factor of an expression.
 // F -> <NUMBER> | "(" E ")"
-Exp factor():
-{ Token t; Exp e; }
+double factor():
+{ Token t; double e; }
 {
-      t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
+      t=<NUMBER> { return Double.parseDouble(t.toString()); }
     | "(" e=expression() ")" { return e; }
 }

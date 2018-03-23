@@ -1,11 +1,12 @@
 public class Num extends Exp
 {
-    public int aVal;
+    public double aVal;
 
-    public Num(int pVal)
+    public Num(double pVal)
     {
         aVal = pVal;
     }
+    
     public void accept(Visitor v)
     {
         v.visitNum(this);
