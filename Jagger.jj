@@ -46,8 +46,16 @@ Exp expression():
 {
     a=term()
     (
-      "+" b=expression() { return new Add(a,b); }
-    | "-" b=expression() { return new Sub(a,b); }
+      "+" b=expression() {a = new Add(a, b);}
+    | "-" b=expression() { a = new Sub(a,b);}
+
+    | "=" b=expression() { a = new Equal(a,b); }
+    | "<>" b=expression() { a = new NonEqual(a,b); }
+    | ">" b=expression() { a = new Sup(a,b); }
+    | "<" b=expression() { a = new Inf(a,b); }
+    | ">=" b=expression() { a = new SupEqual(a,b); }
+    | "<=" b=expression() { a = new InfEqual(a,b); }
+    //| "print" "(" a=expression() ")" { a = System.out.print(a.toString()); }
     )? { return a; }
 }
 
@@ -58,9 +66,11 @@ Exp term():
 {
     a=factor()
     (
-      "*" b=factor() { return new Mul(a,b); }
-    | "/" b=factor() { return new Div(a,b); }
+      "*" b=factor() { a = new Mul(a,b); }
+    | "/" b=factor() { a = new Div(a,b); }
+    | "-" b=factor() { a = new UnNeg(b); }
     )* { return a; }
+    
 }
 
 // Factor of an expression.
@@ -69,5 +79,6 @@ Exp factor():
 { Token t; Exp e; }
 {
       t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
+
     | "(" e=expression() ")" { return e; }
 }
