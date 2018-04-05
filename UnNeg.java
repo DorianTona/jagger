@@ -1,4 +1,4 @@
-public class UnNeg extends Exp
+public class UnNeg extends UnOp
 {
     public Exp aVal;
 
@@ -6,9 +6,10 @@ public class UnNeg extends Exp
     {
         aVal = pVal;
     }
-    
+
     public void accept(Visitor v)
     {
         v.visitUnNeg(this);
     }
+
 }

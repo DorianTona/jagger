@@ -11,6 +11,7 @@ CLASSES = \
 	Sub.java \
 	Mul.java \
 	Div.java \
+	UnOp.java \
 	UnNeg.java \
 	Equal.java \
 	NonEqual.java \
@@ -19,7 +20,8 @@ CLASSES = \
 	Inf.java \
 	InfEqual.java \
 	PrettyPrinter.java \
-	Visitor.java 
+	Visitor.java \
+	Equal.java
 
 default: classes
 
@@ -31,3 +33,11 @@ classes: $(CLASSES:.java=.class)
 clean:
 	$(RM) *.class
 	$(RM) Jagger.java
+
+test:
+	java Jagger
+	1
+	-(1)
+	1+1
+	1-1
+	

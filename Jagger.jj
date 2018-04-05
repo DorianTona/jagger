@@ -22,6 +22,7 @@ TOKEN:
     < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >  // A decimal number.
 |   < DIGIT: ["0"-"9"] >                      // A decimal digit.
 |   < EOL: "\n" >                             // End of line.
+//|   < UNAIRE: ["+","-"]? <NUMBER> >   
 }
 
 // Main loop: read expressions on a line until end of file.
@@ -29,11 +30,22 @@ TOKEN:
 void mainloop():
 { Exp a; }
 {
-    (
+
+    "print("a=expression()")" {
+        Eval ev = new Eval(a);
+        System.out.println(ev.res);
+        System.out.println();
+    }
+    |(
       a=expression() <EOL> {
         PrettyPrinter pp = new PrettyPrinter();
         pp.print(a);
         System.out.println();
+        Eval ev = new Eval(a);
+        System.out.println(ev.res);
+        System.out.println();
+        System.out.println();
+        
       }
     )*
     <EOF>
@@ -46,39 +58,46 @@ Exp expression():
 {
     a=term()
     (
-      "+" b=expression() {a = new Add(a, b);}
-    | "-" b=expression() { a = new Sub(a,b);}
-
-    | "=" b=expression() { a = new Equal(a,b); }
-    | "<>" b=expression() { a = new NonEqual(a,b); }
-    | ">" b=expression() { a = new Sup(a,b); }
-    | "<" b=expression() { a = new Inf(a,b); }
-    | ">=" b=expression() { a = new SupEqual(a,b); }
-    | "<=" b=expression() { a = new InfEqual(a,b); }
-    //| "print" "(" a=expression() ")" { a = System.out.print(a.toString()); }
+      "+" b=expression() {return a = new Add(a, b);}
+    | "-" b=expression() { return a = new Sub(a,b);}
+    | "==" b=expression() { return a = new Equal(a,b); }
+    | "<>" b=expression() { return a = new NonEqual(a,b); }
+    | ">" b=expression() { return a = new Sup(a,b); }
+    | "<" b=expression() { return a = new Inf(a,b); }
+    | ">=" b=expression() { return a = new SupEqual(a,b); }
+    | "<=" b=expression() { return a = new InfEqual(a,b); }
+    // "print" "(" a=expression() ")" { a = System.out.print(a.toString()); }
     )? { return a; }
 }
+
 
 // Term.
 // T -> F ('*'F | '/'F)*
 Exp term():
 { Exp a,b; }
 {
-    a=factor()
+    a=unary()
     (
-      "*" b=factor() { a = new Mul(a,b); }
-    | "/" b=factor() { a = new Div(a,b); }
-    | "-" b=factor() { a = new UnNeg(b); }
+      "*" b=term() { a = new Mul(a,b); }
+    | "/" b=term() { a = new Div(a,b); }
     )* { return a; }
     
+}
+
+Exp unary():
+{Exp a;}
+{
+    "+" a=factor(){return a;}
+    |"-" a=factor(){return new UnNeg(a);}
+    |a=factor(){return a;}
 }
 
 // Factor of an expression.
 // F -> <NUMBER> | "(" E ")"
 Exp factor():
-{ Token t; Exp e; }
+{ Token t; Exp e;}
 {
       t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
-
+      
     | "(" e=expression() ")" { return e; }
 }

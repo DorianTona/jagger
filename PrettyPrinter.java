@@ -43,7 +43,7 @@ public class PrettyPrinter extends Visitor
     {
         System.out.print("(");
         n.lhs.accept(this);
-        System.out.print(" = ");
+        System.out.print(" == ");
         n.rhs.accept(this);
         System.out.print(")");
         return;
@@ -97,7 +97,10 @@ public class PrettyPrinter extends Visitor
     }
     public void visitUnNeg(UnNeg n)
     {
-        System.out.print("-" + n.aVal);
+        System.out.print("(-");
+        n.aVal.accept(this);
+        System.out.print(")");
+        return; 
     }
 
 
@@ -106,4 +109,5 @@ public class PrettyPrinter extends Visitor
     {
         e.accept(this);
     }
+
 }
