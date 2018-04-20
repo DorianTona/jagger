@@ -3,14 +3,19 @@ options { LOOKAHEAD=1; FORCE_LA_CHECK=true; }
 
 // Fonction principale
 PARSER_BEGIN(Jagger)
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Jagger
 {
-    public static void main(String args[]) throws ParseException
-    {
-        Jagger parser = new Jagger(System.in);
-        parser.mainloop();
-    }
+	static PrettyPrinter pp = new PrettyPrinter();
+	static Eval ev = new Eval();
+	static HashMap<String, Exp> attributes = new HashMap<String, Exp>();
+  	static ArrayList<Exp> instructions = new ArrayList<Exp>();
 }
+
+
 PARSER_END(Jagger)
 
 // Characters to ignore.
@@ -19,36 +24,86 @@ SKIP: { " " | "\r" | "\t" }
 // Token specifications.
 TOKEN:
 {
-    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >  // A decimal number.
-|   < DIGIT: ["0"-"9"] >                      // A decimal digit.
-|   < EOL: "\n" >                             // End of line.
-//|   < UNAIRE: ["+","-"]? <NUMBER> >   
+    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >			// A decimal number.
+|   < DIGIT: ["0"-"9"] >								// A decimal digit.
+|   < EOL: "\n" >										// End of line.
+|   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >		// string
+
+|	< PRINT: "print" >
+
+|	< IF: "if" >
+|	< THEN: "then" >
+|	< ELSE: "else" >
+
+|	< LET: "let" >
+|	< IN: "in" >
+|	< END: "end" >
+|	< VAR: "var" >
+|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >    // variable
 }
 
 // Main loop: read expressions on a line until end of file.
-//     mainloop → (expression <EOL>)* <EOF>
+//     mainloop → (let (var)* in (Exp)+ end <EOL>)* <EOF>
 void mainloop():
+{ 
+  Token t;
+  Exp a;
+}
+{
+    ( 
+  	(<LET>
+    	( <VAR> t=<VARIABLE> ":=" a=ternary() { attributes.putIfAbsent(t.toString(), a); })*
+    <IN>
+    	( a=display() (",")?{ instructions.add(a);} | mainloop() )+
+    <END>)
+    { 
+    	a=new Scope(attributes, instructions);
+    	pp.print(a);
+    	System.out.println();
+		
+    	attributes.clear();
+    	instructions.clear();
+    }
+    <EOL> )* <EOF>
+}
+
+// print
+Exp display():
 { Exp a; }
 {
+	<PRINT> "("a=ternary()")" {
+        //ev.print(a);
+        return a;
+    } |
+    a=ternary()
+    { return a; }
+}
 
-    "print("a=expression()")" {
-        Eval ev = new Eval(a);
-        System.out.println(ev.res);
-        System.out.println();
-    }
-    |(
-      a=expression() <EOL> {
-        PrettyPrinter pp = new PrettyPrinter();
-        pp.print(a);
-        System.out.println();
-        Eval ev = new Eval(a);
-        System.out.println(ev.res);
-        System.out.println();
-        System.out.println();
-        
-      }
-    )*
-    <EOF>
+//ternary operators
+// T -> ('if' T 'then' T 'else' T | C)
+Exp ternary():
+{ Exp a,b,c; }
+{   
+    (
+      <IF> a=ternary() <THEN> b=display() <ELSE> c=display() {  a = new Ins(a,b,c); }
+    | a=comparison()
+    )+ { return a; }
+}
+
+// Comparison operators
+// C -> E ('=='E | '<>'E | '>'E | '<'E | '>='E | '<='E)*
+Exp comparison():
+{ Exp a,b; }
+{
+    a=expression()
+    (
+      "=="  b=expression()  { a = new Equal(a,b); }
+    | "<>"  b=expression()  { a = new NonEqual(a,b); }
+    | ">"   b=expression()  { a = new Sup(a,b); }
+    | "<"   b=expression()  { a = new Inf(a,b); }
+    | ">="  b=expression()  { a = new SupEqual(a,b); }
+    | "<="  b=expression()  { a = new InfEqual(a,b); }
+    )? { return a; }
 }
 
 // Expression (the axiom).
@@ -58,21 +113,14 @@ Exp expression():
 {
     a=term()
     (
-      "+" b=expression() {return a = new Add(a, b);}
-    | "-" b=expression() { return a = new Sub(a,b);}
-    | "==" b=expression() { return a = new Equal(a,b); }
-    | "<>" b=expression() { return a = new NonEqual(a,b); }
-    | ">" b=expression() { return a = new Sup(a,b); }
-    | "<" b=expression() { return a = new Inf(a,b); }
-    | ">=" b=expression() { return a = new SupEqual(a,b); }
-    | "<=" b=expression() { return a = new InfEqual(a,b); }
-    // "print" "(" a=expression() ")" { a = System.out.print(a.toString()); }
-    )? { return a; }
+      "+" b=term()  { a = new Add(a,b); }
+    | "-" b=term()  { a = new Sub(a,b); }
+    )* { return a; }
 }
 
 
 // Term.
-// T -> F ('*'F | '/'F)*
+// T -> U ('*'T | '/'T)*
 Exp term():
 { Exp a,b; }
 {
@@ -81,23 +129,24 @@ Exp term():
       "*" b=term() { a = new Mul(a,b); }
     | "/" b=term() { a = new Div(a,b); }
     )* { return a; }
-    
 }
 
+// Unary operator.
+// U -> ('*'F | '/'F | F)*
 Exp unary():
-{Exp a;}
+{ Exp a; }
 {
-    "+" a=factor(){return a;}
-    |"-" a=factor(){return new UnNeg(a);}
-    |a=factor(){return a;}
+      "-" a=factor() { return a = new UnNeg(a); }
+    | ("+" a=factor() | a=factor()) { return a; }
 }
 
 // Factor of an expression.
-// F -> <NUMBER> | "(" E ")"
+// F -> <NUMBER> | <STRING> | "(" E ")"
 Exp factor():
 { Token t; Exp e;}
 {
       t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
-      
+    | t=<STRING> { return new Chaine(t.toString()); }
+    | t=<VARIABLE> { return new Variable(t.toString()); }
     | "(" e=expression() ")" { return e; }
 }

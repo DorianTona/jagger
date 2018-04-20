@@ -5,6 +5,9 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
+	Main.java \
+	TestCheck.java \
+	RunCheck.java \
 	Exp.java \
 	Num.java \
 	Add.java \
@@ -21,23 +24,25 @@ CLASSES = \
 	InfEqual.java \
 	PrettyPrinter.java \
 	Visitor.java \
-	Equal.java
+	Equal.java \
+	Ins.java \
+	Chaine.java \
+	Variable.java \
+	Scope.java
 
 default: classes
 
 classes: $(CLASSES:.java=.class)
 	java -cp javacc.jar javacc Jagger.jj
 	javac -g Jagger.java
-
+	java Main
 	
 clean:
 	$(RM) *.class
 	$(RM) Jagger.java
 
-test:
-	java Jagger
-	1
-	-(1)
-	1+1
-	1-1
+check: $(CLASSES:.java=.class)
+	java -cp javacc.jar javacc Jagger.jj
+	javac -g Jagger.java
+	java TestCheck
 	

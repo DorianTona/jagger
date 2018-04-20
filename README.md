@@ -1,5 +1,37 @@
-# jagger
-Assignment: Java implementation of Tigger
+# Membres :
+Dorian Tona - Paul Giovannini
 
-lancer javacc sur les pc de l'esiee :
-java -cp javacc.jar javacc Jagger.jj
+# Travail réalisé :
+    Nous sommes alles jusqu'au support des variables et des scopes.
+
+# Difficultés rencontrées : 
+    Nous avons beaucoup travaillé sur la creation d'une grammaire cohérente pour que le programme soit le plus simple à implementer par la suite.
+    
+    Le principal soucis auquel nous avons été confrontés est la création de scope imbriqués ...
+
+# Précisions : 
+    Dans le sujet, il est écrit que l'exemple suivant est invalide:
+    
+            let var foo := 1
+                var bar := 1
+                var foo := 1
+            in 1 end
+
+    Nous avons donc compris que c'est la double déclaration d'un même identifiant de variable 
+    qui doit etre différents. Ainsi, nous avons fait en sorte que si une variable est declarée puis redéfinie dans une autre instruction, cette dernière n'est pas prise en compte et la valeur de la variable reste celle définie à la première assignation.
+    
+    La grammaire des scopes est la suivante :
+        
+        let 
+            (assignation)*
+        in
+            (instruction)+
+        end
+    
+
+# Pour lancer le projet :
+Avec l'entrée clavier :
+make
+
+Pour exécuter les différents test :
+make check
