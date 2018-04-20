@@ -59,8 +59,10 @@ void mainloop():
     { 
     	a=new Scope(attributes, instructions);
     	pp.print(a);
-    	System.out.println();
-		
+        System.out.println();
+    	System.out.println("Résultat :");
+		ev.print(a);
+        System.out.println();
     	attributes.clear();
     	instructions.clear();
     }
@@ -72,7 +74,7 @@ Exp display():
 { Exp a; }
 {
 	<PRINT> "("a=ternary()")" {
-        //ev.print(a);
+        ev.print(a);
         return a;
     } |
     a=ternary()
