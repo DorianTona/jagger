@@ -1,2 +1,7 @@
 let in 1+2*3 end
 let in 1+2/3 end
+let var a:=2, var b:=3, var c:=a+b in if (a+b)*(a+b) == a*a +b*b then ((a+b)*(a+b)) else (a*a +b*b) end
+let in (1+2)*3 end
+let in 2*3*4*5 end
+let in 2*3+2*3 end
+let var a:=2, var b:=3 in a*b*a*b end
