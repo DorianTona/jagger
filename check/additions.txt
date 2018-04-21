@@ -1,2 +1,6 @@
 let in 1+2+3+4+5 end
 let in 1+1+1+1 end
+let in (1+1) - (2-3) end
+let in (1-2-3-4-5) end
+let in (42+42) end
+let in 12-13 end
