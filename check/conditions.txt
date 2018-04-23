@@ -1,6 +1,0 @@
-let in print(if 1 then 2 else 3) end
-let in print(if if 0 then 1 else 2 then 1+2 else 2+3) end
-let in print(if if if 0 then 1 else 2 then 1+2 else 2+3 then 42 else 3) end
-let var a:=1, var b:=2 in print(if 43-42 then a else b) end
-let var true:=1 in print(if true then print(12) else print(13)) end
-let in print(if 1 then print("a") else print(404)) end
