@@ -1,0 +1,43 @@
+<<<<<<< HEAD
+let in print(1==1) end
+let in print(42 ==37) end
+let in print(1<2) end
+let in print(1>2) end
+let in print(1<=1) end
+let in print(1<=3) end
+let in print(1>=1) end
+let in print(3>=1) end
+let in print(2>3>4) end
+let in print(2<3<4) end
+let in print(2<>3) end
+let in print(2<>2) end
+let in print("foo" =="foo") end
+let in print("toto" =="foo") end
+let in print("foo" <"bar") end
+let in print("foo"< "toto") end
+let in print("foo" >"bar") end
+let in print("toto" >"foo") end
+let in print("toto" <> "foo") end
+let in print("foo"<>"bar") end
+=======
+let in 1==1 end
+let in 42 ==37 end
+let in 1<2 end
+let in 1>2 end
+let in 1<=1 end
+let in 1<=3 end
+let in 1>=1 end
+let in 3>=1 end
+let in 2>3>4 end
+let in 2<3<4 end
+let in 2<>3 end
+let in 2<>2 end
+let in "foo" =="foo" end
+let in "toto" =="foo" end
+let in "foo" <"bar" end
+let in "foo"< "toto end
+let in "foo" >"bar" end
+let in "toto" >"foo" end
+let in "toto" <> "foo"
+let in "foo"<>"bar"
+>>>>>>> c95bc0becab92c7c2ebd075d4d94e1af2d476834

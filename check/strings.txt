@@ -1,0 +1,14 @@
+let in print(print(1+2*3)) end
+let in print("foo" + "bar") end
+let in print(print("foo" + "bar")) end
+let in print("foo" > "bar") end
+let in print("foo" < "bar") end
+let in print("toto" >= "bar") end
+let in print("toto" <= "bar") end
+let in print("foo" >= "bar") end
+let in print("foo" <= "bar") end
+let in print("toto" <> "bar") end
+let in print("bar" <> "bar") end
+let in print("toto" == "bar") end
+let in print("foo" == "bar") end
+let varprint( foo:=1 in 1+1) end
