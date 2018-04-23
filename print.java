@@ -1,9 +1,13 @@
 public class Print extends Exp
 {
-    public Print() { }
+	Exp aVal;
+
+    public Print(Exp pVal) {
+    	aVal = pVal;
+    }
     
-    public void eval(Exp e)
+    public void accept(Visitor v)
     {
-    	System.out.println(e.accept(new PrettyPrinter()).toDouble());
+        v.visitPrint(this);
     }
 }

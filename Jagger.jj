@@ -9,24 +9,22 @@ import java.util.HashMap;
 
 public class Jagger
 {
-	static PrettyPrinter pp = new PrettyPrinter();
-	static Eval ev = new Eval();
-	static HashMap<String, Exp> attributes = new HashMap<String, Exp>();
-  	static ArrayList<Exp> instructions = new ArrayList<Exp>();
+    static PrettyPrinter pp = new PrettyPrinter();
+    static Eval ev = new Eval();
 }
 
 
 PARSER_END(Jagger)
 
 // Characters to ignore.
-SKIP: { " " | "\r" | "\t" }
+SKIP: { " " | "\r" | "\t" | "\n" }
 
 // Token specifications.
 TOKEN:
 {
     < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >			// A decimal number.
 |   < DIGIT: ["0"-"9"] >								// A decimal digit.
-|   < EOL: "\n" >										// End of line.
+//|   < EOL: "\n" >										// End of line.
 |   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >		// string
 
 |	< PRINT: "print" >
@@ -43,54 +41,57 @@ TOKEN:
 }
 
 // Main loop: read expressions on a line until end of file.
-//     mainloop → (let (var)* in (Exp)+ end <EOL>)* <EOF>
+//     mainloop → (statement)* <EOF>
 void mainloop():
-{ 
-  Token t;
-  Exp a;
-}
-{
-    ( 
-  	(<LET>
-    	( <VAR> t=<VARIABLE> ":=" a=ternary() { attributes.putIfAbsent(t.toString(), a); })*
-    <IN>
-    	( a=display() (",")?{ instructions.add(a);} | mainloop() )+
-    <END>)
-    { 
-    	a=new Scope(attributes, instructions);
-    	pp.print(a);
-        System.out.println();
-    	System.out.println("Résultat :");
-		ev.print(a);
-        System.out.println();
-    	attributes.clear();
-    	instructions.clear();
-    }
-    <EOL> )* <EOF>
-}
-
-// print
-Exp display():
 { Exp a; }
 {
-	<PRINT> "("a=ternary()")" {
-        ev.print(a);
-        return a;
-    } |
-    a=ternary()
-    { return a; }
+    ( a=scope() )* <EOF>
 }
 
-//ternary operators
-// T -> ('if' T 'then' T 'else' T | C)
-Exp ternary():
-{ Exp a,b,c; }
-{   
-    (
-      <IF> a=ternary() <THEN> b=display() <ELSE> c=display() {  a = new Ins(a,b,c); }
-    | a=comparison()
-    )+ { return a; }
+//     scope → <LET> declaration <IN> comparison (,comparison)* <END>
+Exp scope():
+{ Exp a, s; }
+{
+    <LET>
+        s = declaration()
+    <IN>
+        s = assignation(s) ("," s = assignation(s))*
+    <END>
+    { 
+        pp.print(s);
+        System.out.println("\nResult :");
+        ev.print(s);
+        ((Scope)s).exit();
+        return s;
+    }
 }
+
+Exp assignation(Exp s):
+{
+    Exp a; 
+    Token t;
+}
+{
+    (
+      a = scope() { ((Scope)s).addInstruction(a); }
+    | <PRINT> "(" a=comparison() ")" { ((Scope)s).addInstruction( new Print(a)); }
+    | t=<VARIABLE> "," a=comparison() { ((Scope)s).changeValue(t.toString(), a); }
+    ) { return s; }
+}
+
+//     declaration → (var <VARIABLE> := comparison)*
+Scope declaration():
+{
+    Token t;
+    Exp e;
+    Scope s = new Scope();
+}
+{
+    ( <VAR> t=<VARIABLE> ":=" e=comparison() { s.addDeclaration(t.toString(), e); } )*
+    ("," <VAR> t=<VARIABLE> ":=" e=comparison() { s.addDeclaration(t.toString(), e); } )*
+    { return s; }
+}
+
 
 // Comparison operators
 // C -> E ('=='E | '<>'E | '>'E | '<'E | '>='E | '<='E)*
@@ -134,21 +135,32 @@ Exp term():
 }
 
 // Unary operator.
-// U -> ('*'F | '/'F | F)*
+// U -> ('*'T | '/'T | T)*
 Exp unary():
 { Exp a; }
 {
-      "-" a=factor() { return a = new UnNeg(a); }
-    | ("+" a=factor() | a=factor()) { return a; }
+      "-" a=ternary() { return a = new UnNeg(a); }
+    | ("+" a=ternary() | a=ternary()) { return a; }
+}
+
+//ternary operators
+// T -> ('if' C 'then' C 'else' C | F)
+Exp ternary():
+{ Exp a,b,c; }
+{   
+    (
+      <IF> a=comparison() <THEN> b=comparison() <ELSE> c=comparison() {  a = new Ins(a,b,c); }
+    | a=factor()
+    )+ { return a; }
 }
 
 // Factor of an expression.
-// F -> <NUMBER> | <STRING> | "(" E ")"
+// F -> <NUMBER> | <STRING> | <VARIABLE> | "(" E ")"
 Exp factor():
 { Token t; Exp e;}
 {
       t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
     | t=<STRING> { return new Chaine(t.toString()); }
     | t=<VARIABLE> { return new Variable(t.toString()); }
-    | "(" e=expression() ")" { return e; }
+    | "(" e=comparison() ")" { return e; }
 }

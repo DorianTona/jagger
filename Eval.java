@@ -5,7 +5,7 @@ public class Eval extends Visitor
 {
 	public double res;
 	public String sRes;
-	private HashMap<String, Exp> data = new HashMap<String, Exp>();
+	private ArrayList<Scope> data = new ArrayList<Scope>();
 
 	public Eval(){
 		res = 0.0;
@@ -31,10 +31,10 @@ public class Eval extends Visitor
 	public void visitAdd(Add pVal) {
 		//Transform variables into expressions
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
@@ -52,10 +52,10 @@ public class Eval extends Visitor
 	}
 	public void visitSub(Sub pVal) {
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		pVal.lhs.accept(this);
 		double temp = res;
@@ -66,10 +66,10 @@ public class Eval extends Visitor
 
 	public void visitMul(Mul pVal) {
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		pVal.lhs.accept(this);
 		double temp = res;
@@ -79,10 +79,10 @@ public class Eval extends Visitor
 	}
 	public void visitDiv(Div pVal) {
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		pVal.lhs.accept(this);
 		double temp = res;
@@ -94,10 +94,10 @@ public class Eval extends Visitor
     ///////COMPARISONS///////
 	public void visitSup(Sup pVal) {
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -117,10 +117,10 @@ public class Eval extends Visitor
 	}
 	public void visitSupEqual(SupEqual pVal){
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -141,10 +141,10 @@ public class Eval extends Visitor
 
 	public void visitInf(Inf pVal) {
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -164,10 +164,10 @@ public class Eval extends Visitor
 	}
 	public void visitInfEqual(InfEqual pVal){
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -188,10 +188,10 @@ public class Eval extends Visitor
 
 	public void visitEqual(Equal pVal){
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -211,10 +211,10 @@ public class Eval extends Visitor
 	}
 	public void visitNonEqual(NonEqual pVal){
 		if(pVal.lhs instanceof Variable){
-			pVal.lhs = data.get(((Variable)pVal.lhs).aVal);
+			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
 		if(pVal.rhs instanceof Variable){
-			pVal.rhs = data.get(((Variable)pVal.rhs).aVal);
+			pVal.rhs = getInActiveScope(((Variable)pVal.rhs).aVal);
 		}
 		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
 			pVal.lhs.accept(this);
@@ -237,13 +237,13 @@ public class Eval extends Visitor
 	public void visitIns(Ins n)
     {
     	if(n.cond instanceof Variable){
-			n.cond = data.get(((Variable)n.cond).aVal);
+			n.cond = getInActiveScope(((Variable)n.cond).aVal);
 		}
 		if(n.expThen instanceof Variable){
-			n.expThen = data.get(((Variable)n.expThen).aVal);
+			n.expThen = getInActiveScope(((Variable)n.expThen).aVal);
 		}
 		if(n.expElse instanceof Variable){
-			n.expElse = data.get(((Variable)n.expElse).aVal);
+			n.expElse = getInActiveScope(((Variable)n.expElse).aVal);
 		}
 
 	    n.cond.accept(this);
@@ -255,21 +255,39 @@ public class Eval extends Visitor
     }
     public void visitVariable(Variable n)
     {
-        data.get(n.aVal).accept(this);
+        getInActiveScope(n.aVal).accept(this);
         sRes = Double.toString(res);
     }
     public void visitScope(Scope n)
     {
-    	data = n.data;
+    	data = n.activeScopes;
         for (Exp a : n._in) {
             a.accept(this);
         }
     }
+
+	public void visitPrint(Print n)
+	{
+		n.aVal.accept(this);
+	}
 
     ///////PRINT///////
 	public void print(Exp e)
     {
         e.accept(this);
         System.out.println(sRes);
+    }
+
+    /////UTILITAIRES/////
+    public Exp getInActiveScope(String s)
+    {       
+        Exp e = null;
+        for(Scope scope:data) {
+            if(scope.hasId(s)) {
+                e = scope.get(s);
+                break;
+            }
+        }
+        return e;
     }
 }

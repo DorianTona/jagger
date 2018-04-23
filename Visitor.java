@@ -3,6 +3,7 @@ import java.util.HashMap;
 
 public abstract class Visitor
 {
+    abstract void visitPrint (Print n);
     abstract void visitVariable (Variable n);
     abstract void visitScope (Scope n);
 

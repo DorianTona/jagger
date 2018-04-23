@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class PrettyPrinter extends Visitor
 {
-	private HashMap<String, Exp> data = new HashMap<String, Exp>();
+	private ArrayList<Scope> data = new ArrayList<Scope>();
 	///////TYPES///////
 	public void visitNum(Num n)
 	{
@@ -149,17 +149,19 @@ public class PrettyPrinter extends Visitor
 	}
 	public void visitVariable(Variable n)
 	{
-		data.get(n.aVal).accept(this);
+		getInActiveScope(n.aVal).accept(this);
 	}
 	public void visitScope(Scope n)
 	{
-		data = n.data;
+    	data = n.activeScopes;
 		System.out.println("let ");
-		for (String entry : data.keySet()) {
-			System.out.print("  ");
-			System.out.print("var "+ entry + " := ");
-			data.get(entry).accept(this);
-			System.out.println();
+		for(Scope data : n.activeScopes){
+			for (String entry : data.data.keySet()) {
+				System.out.print("  ");
+				System.out.print("var "+ entry + " := ");
+				getInActiveScope(entry).accept(this);
+				System.out.println();
+			}
 		}
 		System.out.println("in");
 
@@ -171,9 +173,29 @@ public class PrettyPrinter extends Visitor
 		System.out.println("end");
 	}
 
+	public void visitPrint(Print n)
+	{
+		System.out.print("print(");
+		n.aVal.accept(this);
+		System.out.print(")");
+	}
+
 	////PRINT//////
 	public void print(Exp e)
 	{
 		e.accept(this);
 	}
+
+    /////UTILITAIRES/////
+    public Exp getInActiveScope(String s)
+    {       
+        Exp e = null;
+        for(Scope scope:data) {
+            if(scope.hasId(s)) {
+                e = scope.get(s);
+                break;
+            }
+        }
+        return e;
+    }
 }
