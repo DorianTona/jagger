@@ -19,25 +19,32 @@ PARSER_END(Jagger)
 // Characters to ignore.
 SKIP: { " " | "\r" | "\t" | "\n" }
 
+//Keywords
+TOKEN:
+{
+    < PRINT: "print" >
+
+|   < IF: "if" >
+|   < THEN: "then" >
+|   < ELSE: "else" >
+
+|   < LET: "let" >
+|   < VAR: "var" >
+|   < IN: "in" >
+|   < END: "end" >
+}
+
 // Token specifications.
 TOKEN:
 {
-    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >			// A decimal number.
-|   < DIGIT: ["0"-"9"] >								// A decimal digit.
-//|   < EOL: "\n" >										// End of line.
-|   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >		// string
-
-|	< PRINT: "print" >
-
-|	< IF: "if" >
-|	< THEN: "then" >
-|	< ELSE: "else" >
-
-|	< LET: "let" >
-|	< IN: "in" >
-|	< END: "end" >
-|	< VAR: "var" >
-|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >    // variable
+    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                        // A decimal number.
+|   < DIGIT: ["0"-"9"] >								            // A decimal digit.
+|   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >                 // string
+|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
+|   < LRB: "(" >                                                    // Left Round Bracket
+|   < RRB: ")" >                                                    // Right Round BRacket
+|   < ASSIGNMENT: ":=" >
+|   < COMMA: "," >
 }
 
 // Main loop: read expressions on a line until end of file.
@@ -55,7 +62,7 @@ Exp scope():
     <LET>
         s = declaration()
     <IN>
-        s = assignation(s) ("," s = assignation(s))*
+        s = assignation(s) (<COMMA> s = assignation(s))*
     <END>
     { 
         pp.print(s);
@@ -66,19 +73,6 @@ Exp scope():
     }
 }
 
-Exp assignation(Exp s):
-{
-    Exp a; 
-    Token t;
-}
-{
-    (
-      a = scope() { ((Scope)s).addInstruction(a); }
-    | <PRINT> "(" a=comparison() ")" { ((Scope)s).addInstruction( new Print(a)); }
-    | t=<VARIABLE> "," a=comparison() { ((Scope)s).changeValue(t.toString(), a); }
-    ) { return s; }
-}
-
 //     declaration → (var <VARIABLE> := comparison)*
 Scope declaration():
 {
@@ -87,11 +81,24 @@ Scope declaration():
     Scope s = new Scope();
 }
 {
-    ( <VAR> t=<VARIABLE> ":=" e=comparison() { s.addDeclaration(t.toString(), e); } )*
-    ("," <VAR> t=<VARIABLE> ":=" e=comparison() { s.addDeclaration(t.toString(), e); } )*
+    (<VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } )*
+    (<COMMA> <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } )*
     { return s; }
 }
 
+
+Exp assignation(Exp s):
+{
+    Exp a; 
+    Token t;
+}
+{
+    (
+      a = scope() { ((Scope)s).addInstruction(a); }
+    | <PRINT> <LRB> a=comparison() <RRB> { ((Scope)s).addInstruction( new Print(a)); }
+    | t=<VARIABLE> <COMMA> a=comparison() { ((Scope)s).changeValue(t.toString(), a); }
+    ) { return s; }
+}
 
 // Comparison operators
 // C -> E ('=='E | '<>'E | '>'E | '<'E | '>='E | '<='E)*
@@ -162,5 +169,5 @@ Exp factor():
       t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
     | t=<STRING> { return new Chaine(t.toString()); }
     | t=<VARIABLE> { return new Variable(t.toString()); }
-    | "(" e=comparison() ")" { return e; }
+    | <LRB> e=comparison() <RRB> { return e; }
 }
