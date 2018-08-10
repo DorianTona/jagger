@@ -7,7 +7,8 @@ public class Eval extends Visitor
 	public String sRes;
 	private ArrayList<Scope> data = new ArrayList<Scope>();
 
-	public Eval(){
+	//constructor
+	public Eval() {
 		res = 0.0;
 		sRes = "";
 	}

@@ -52,6 +52,7 @@ public class PrettyPrinter extends Visitor
 		n.rhs.accept(this);
 		System.out.print(")");
 	}
+	
 	//////COMPARISON///////
 	public void visitEqual(Equal n)
 	{

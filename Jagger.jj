@@ -19,9 +19,10 @@ PARSER_END(Jagger)
 // Characters to ignore.
 SKIP: { " " | "\r" | "\t" | "\n" }
 
-//Keywords
+// Token specifications.
 TOKEN:
 {
+    //Keywords
     < PRINT: "print" >
 
 |   < IF: "if" >
@@ -32,71 +33,82 @@ TOKEN:
 |   < VAR: "var" >
 |   < IN: "in" >
 |   < END: "end" >
-}
 
-// Token specifications.
-TOKEN:
-{
-    < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                        // A decimal number.
-|   < DIGIT: ["0"-"9"] >								            // A decimal digit.
+    //Other tokens
+|   < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                        // A decimal number.
+|   < DIGIT: ["0"-"9"] >                                            // A decimal digit.
 |   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >                 // string
-|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
 |   < LRB: "(" >                                                    // Left Round Bracket
 |   < RRB: ")" >                                                    // Right Round BRacket
+|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
 |   < ASSIGNMENT: ":=" >
 |   < COMMA: "," >
 }
 
+//let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
+
 // Main loop: read expressions on a line until end of file.
-//     mainloop → (statement)* <EOF>
+//  mainloop → (statement)* <EOF>
 void mainloop():
 { Exp a; }
 {
-    ( a=scope() )* <EOF>
+    ( a=statement() )* <EOF>
 }
 
-//     scope → <LET> declaration <IN> comparison (,comparison)* <END>
+//  statement → scope | print(comparison())
+Exp statement():
+{ Exp e; }
+{
+    (   
+      e=scope()
+    | <PRINT> <LRB> e=comparison() <RRB> { e = new Print(e); ev.print(e); }
+    )
+    { return e; }
+}
+
+//  scope → let (declaration)* in comparison (, comparison)* end
 Exp scope():
-{ Exp a, s; }
+{
+    Exp a, e;
+    Scope s = new Scope();
+}
 {
     <LET>
-        s = declaration()
+        (e = declaration(s))*
     <IN>
-        s = assignation(s) (<COMMA> s = assignation(s))*
+        e = instruction(s) (<COMMA> e = instruction(s))*
     <END>
     { 
-        pp.print(s);
-        System.out.println("\nResult :");
+        //pp.print(s);
+        //System.out.println("\nResult :");
         ev.print(s);
-        ((Scope)s).exit();
+        s.exit();
         return s;
     }
 }
 
-//     declaration → (var <VARIABLE> := comparison)*
-Scope declaration():
+//  declaration → (var <VARIABLE> := comparison)*
+Scope declaration(Scope s):
 {
     Token t;
     Exp e;
-    Scope s = new Scope();
 }
 {
-    (<VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } )*
-    (<COMMA> <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } )*
-    { return s; }
+    (
+      <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } 
+    ) { return s; }
 }
 
-
-Exp assignation(Exp s):
+Exp instruction(Scope s):
 {
     Exp a; 
     Token t;
 }
 {
     (
-      a = scope() { ((Scope)s).addInstruction(a); }
-    | <PRINT> <LRB> a=comparison() <RRB> { ((Scope)s).addInstruction( new Print(a)); }
-    | t=<VARIABLE> <COMMA> a=comparison() { ((Scope)s).changeValue(t.toString(), a); }
+      a = scope() { s.addInstruction(a); }
+    | <PRINT> <LRB> a=comparison() <RRB> { s.addInstruction( new Print(a)); }
+    | t=<VARIABLE> <COMMA> a=comparison() { s.changeValue(t.toString(), a); }
     ) { return s; }
 }
 
