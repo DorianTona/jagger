@@ -11,6 +11,6 @@ public class Div extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitDiv(this);
+        v.visit(this);
     }
 }

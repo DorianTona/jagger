@@ -10,7 +10,7 @@ public class Add extends Exp{
 
     public void accept(Visitor v)
     {
-        v.visitAdd(this);
+        v.visit(this);
     }
 
 }

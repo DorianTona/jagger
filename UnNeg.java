@@ -9,7 +9,7 @@ public class UnNeg extends UnOp
 
     public void accept(Visitor v)
     {
-        v.visitUnNeg(this);
+        v.visit(this);
     }
 
 }

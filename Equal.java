@@ -11,6 +11,6 @@ public class Equal extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitEqual(this);
+        v.visit(this);
     }
 }

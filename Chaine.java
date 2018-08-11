@@ -9,6 +9,6 @@ public class Chaine extends Exp
     
     public void accept(Visitor v)
     {
-        v.visitChaine(this);
+        v.visit(this);
     }
 }

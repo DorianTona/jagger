@@ -5,30 +5,30 @@ public class PrettyPrinter extends Visitor
 {
 	private ArrayList<Scope> data = new ArrayList<Scope>();
 	///////TYPES///////
-	public void visitNum(Num n)
+	public void visit(Num n)
 	{
 		System.out.print(n.aVal);
 	}
-	public void visitUnNeg(UnNeg n)
+	public void visit(UnNeg n)
 	{
 		System.out.print("(-");
 		n.aVal.accept(this);
 		System.out.print(")");
 	}
-	public void visitChaine(Chaine n)
+	public void visit(Chaine n)
 	{
 		System.out.print(n.aVal);
 	}
 
 	///////CALCUL///////
-	public void visitAdd(Add n){
+	public void visit(Add n){
 		System.out.print("(");
 		n.lhs.accept(this);
 		System.out.print(" + ");
 		n.rhs.accept(this);
 		System.out.print(")");
 	}
-	public void visitSub(Sub n){
+	public void visit(Sub n){
 		System.out.print("(");
 		n.lhs.accept(this);
 		System.out.print(" - ");
@@ -36,7 +36,7 @@ public class PrettyPrinter extends Visitor
 		System.out.print(")");
 	}
 
-	public void visitMul(Mul n)
+	public void visit(Mul n)
 	{
 		System.out.print("(");
 		n.lhs.accept(this);
@@ -44,7 +44,7 @@ public class PrettyPrinter extends Visitor
 		n.rhs.accept(this);
 		System.out.print(")");
 	}
-	public void visitDiv(Div n)
+	public void visit(Div n)
 	{
 		System.out.print("(");
 		n.lhs.accept(this);
@@ -54,7 +54,7 @@ public class PrettyPrinter extends Visitor
 	}
 	
 	//////COMPARISON///////
-	public void visitEqual(Equal n)
+	public void visit(Equal n)
 	{
 		System.out.print("(");
 		n.lhs.accept(this);
@@ -62,7 +62,7 @@ public class PrettyPrinter extends Visitor
 		n.rhs.accept(this);
 		System.out.print(")");
 	}
-	public void visitNonEqual(NonEqual n)
+	public void visit(NonEqual n)
 	{
 		System.out.print("(");
 		n.lhs.accept(this);
@@ -71,7 +71,7 @@ public class PrettyPrinter extends Visitor
 		System.out.print(")");
 	}
 
-	public void visitInf(Inf n)
+	public void visit(Inf n)
 	{
 		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
 			System.out.print("(");
@@ -87,7 +87,7 @@ public class PrettyPrinter extends Visitor
 			System.out.print(")");
 		}
 	}
-	public void visitInfEqual(InfEqual n)
+	public void visit(InfEqual n)
 	{
 		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
 			System.out.print("(");
@@ -104,7 +104,7 @@ public class PrettyPrinter extends Visitor
 		}
 	}
 
-	public void visitSup(Sup n)
+	public void visit(Sup n)
 	{
 		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
 			System.out.print("(");
@@ -120,7 +120,7 @@ public class PrettyPrinter extends Visitor
 			System.out.print(")");
 		}
 	}
-	public void visitSupEqual(SupEqual n)
+	public void visit(SupEqual n)
 	{
 		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
 			System.out.print("(");
@@ -138,7 +138,7 @@ public class PrettyPrinter extends Visitor
 	}
 	
 	//////CONDITIONS///////
-	public void visitIns(Ins n)
+	public void visit(Ins n)
 	{
 		System.out.print("if(");
 		n.cond.accept(this);
@@ -148,11 +148,11 @@ public class PrettyPrinter extends Visitor
 		n.expElse.accept(this);
 		System.out.print(")");
 	}
-	public void visitVariable(Variable n)
+	public void visit(Variable n)
 	{
 		getInActiveScope(n.aVal).accept(this);
 	}
-	public void visitScope(Scope n)
+	public void visit(Scope n)
 	{
     	data = n.activeScopes;
 		System.out.println("let ");
@@ -174,7 +174,7 @@ public class PrettyPrinter extends Visitor
 		System.out.println("end");
 	}
 
-	public void visitPrint(Print n)
+	public void visit(Print n)
 	{
 		System.out.print("print(");
 		n.aVal.accept(this);

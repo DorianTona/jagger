@@ -11,6 +11,6 @@ public class NonEqual extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitNonEqual(this);
+        v.visit(this);
     }
 }

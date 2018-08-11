@@ -11,6 +11,6 @@ public class SupEqual extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitSupEqual(this);
+        v.visit(this);
     }
 }

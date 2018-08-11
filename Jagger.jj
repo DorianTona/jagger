@@ -66,7 +66,7 @@ Exp statement():
     { return e; }
 }
 
-//  scope → let (declaration)* in comparison (, comparison)* end
+//  scope → let (declaration)* in instruction (, instruction)* end
 Exp scope():
 {
     Exp a, e;
@@ -79,8 +79,8 @@ Exp scope():
         e = instruction(s) (<COMMA> e = instruction(s))*
     <END>
     { 
-        //pp.print(s);
-        //System.out.println("\nResult :");
+        pp.print(s);
+        System.out.println("\nResult :");
         ev.print(s);
         s.exit();
         return s;
@@ -108,7 +108,7 @@ Exp instruction(Scope s):
     (
       a = scope() { s.addInstruction(a); }
     | <PRINT> <LRB> a=comparison() <RRB> { s.addInstruction( new Print(a)); }
-    | t=<VARIABLE> <COMMA> a=comparison() { s.changeValue(t.toString(), a); }
+    | a=comparison() (<COMMA> a=comparison())*
     ) { return s; }
 }
 

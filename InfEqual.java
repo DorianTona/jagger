@@ -11,6 +11,6 @@ public class InfEqual extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitInfEqual(this);
+        v.visit(this);
     }
 }

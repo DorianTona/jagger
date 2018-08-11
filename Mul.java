@@ -11,6 +11,6 @@ public class Mul extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitMul(this);
+        v.visit(this);
     }
 }

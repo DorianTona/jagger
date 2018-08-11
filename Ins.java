@@ -1,3 +1,4 @@
+//if then else
 public class Ins extends Exp
 {
 	Exp cond, expThen, expElse;
@@ -11,6 +12,6 @@ public class Ins extends Exp
     
     public void accept(Visitor v)
     {
-        v.visitIns(this);
+        v.visit(this);
     }
 }

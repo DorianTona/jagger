@@ -50,6 +50,6 @@ public class Scope extends Exp
     
     public void accept(Visitor v)
     {
-        v.visitScope(this);
+        v.visit(this);
     }
 }

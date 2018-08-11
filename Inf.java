@@ -11,6 +11,6 @@ public class Inf extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitInf(this);
+        v.visit(this);
     }
 }

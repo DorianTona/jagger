@@ -14,22 +14,25 @@ public class Eval extends Visitor
 	}
 
     ///////TYPES///////
-	public void visitNum(Num pVal) {
+	public void visit(Num pVal) {
 		res = pVal.aVal;
 		sRes = Double.toString(res);
 	}
-	public void visitUnNeg(UnNeg pVal){
-		pVal.aVal.accept(this);
-		res = -res;
-		sRes = Double.toString(res);
-	}
-    public void visitChaine(Chaine n)
+    public void visit(Chaine n)
     {
         sRes = n.aVal;
     }
 
     ///////CALCUL///////
-	public void visitAdd(Add pVal) {
+    //unary
+	public void visit(UnNeg pVal){
+		pVal.aVal.accept(this);
+		res = -res;
+		sRes = Double.toString(res);
+	}
+
+	//binary
+	public void visit(Add pVal) {
 		//Transform variables into expressions
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
@@ -51,7 +54,7 @@ public class Eval extends Visitor
 			sRes = Double.toString(res);
 		}
 	}
-	public void visitSub(Sub pVal) {
+	public void visit(Sub pVal) {
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -64,8 +67,7 @@ public class Eval extends Visitor
 		res = temp - res;
 		sRes = Double.toString(res);
 	}
-
-	public void visitMul(Mul pVal) {
+	public void visit(Mul pVal) {
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -78,7 +80,7 @@ public class Eval extends Visitor
 		res = temp * res;
 		sRes = Double.toString(res);
 	}
-	public void visitDiv(Div pVal) {
+	public void visit(Div pVal) {
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -93,7 +95,7 @@ public class Eval extends Visitor
 	}
 
     ///////COMPARISONS///////
-	public void visitSup(Sup pVal) {
+	public void visit(Sup pVal) {
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -116,7 +118,7 @@ public class Eval extends Visitor
 			sRes = Double.toString(res);
 		}
 	}
-	public void visitSupEqual(SupEqual pVal){
+	public void visit(SupEqual pVal){
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -140,7 +142,7 @@ public class Eval extends Visitor
 		}
 	}
 
-	public void visitInf(Inf pVal) {
+	public void visit(Inf pVal) {
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -163,7 +165,7 @@ public class Eval extends Visitor
 			sRes = Double.toString(res);
 		}
 	}
-	public void visitInfEqual(InfEqual pVal){
+	public void visit(InfEqual pVal){
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -187,7 +189,7 @@ public class Eval extends Visitor
 		}
 	}
 
-	public void visitEqual(Equal pVal){
+	public void visit(Equal pVal){
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -210,7 +212,7 @@ public class Eval extends Visitor
 			sRes = Double.toString(res);
 		}
 	}
-	public void visitNonEqual(NonEqual pVal){
+	public void visit(NonEqual pVal){
 		if(pVal.lhs instanceof Variable){
 			pVal.lhs = getInActiveScope(((Variable)pVal.lhs).aVal);
 		}
@@ -234,8 +236,12 @@ public class Eval extends Visitor
 		}
 	}
 
-	///////CONDITIONS///////
-	public void visitIns(Ins n)
+	///////KEYWORDS///////
+	public void visit(Print n)
+	{
+		n.aVal.accept(this);
+	}
+	public void visit(Ins n)
     {
     	if(n.cond instanceof Variable){
 			n.cond = getInActiveScope(((Variable)n.cond).aVal);
@@ -254,23 +260,18 @@ public class Eval extends Visitor
 			n.expElse.accept(this);
 		}
     }
-    public void visitVariable(Variable n)
+    public void visit(Variable n)
     {
         getInActiveScope(n.aVal).accept(this);
         sRes = Double.toString(res);
     }
-    public void visitScope(Scope n)
+    public void visit(Scope n)
     {
     	data = n.activeScopes;
         for (Exp a : n._in) {
             a.accept(this);
         }
     }
-
-	public void visitPrint(Print n)
-	{
-		n.aVal.accept(this);
-	}
 
     ///////PRINT///////
 	public void print(Exp e)

@@ -9,6 +9,6 @@ public class Variable extends Exp
     
     public void accept(Visitor v)
     {
-        v.visitVariable(this);
+        v.visit(this);
     }
 }

@@ -11,6 +11,6 @@ public class Sup extends Exp
 
     public void accept(Visitor v)
     {
-        v.visitSup(this);
+        v.visit(this);
     }
 }

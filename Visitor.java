@@ -1,29 +1,29 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-
 public abstract class Visitor
-{
-    abstract void visitPrint (Print n);
-    abstract void visitVariable (Variable n);
-    abstract void visitScope (Scope n);
+{   
+    ///////TYPES///////
+    abstract void visit(Chaine n);
+    abstract void visit(Num n);
 
-    abstract void visitIns(Ins n);
+    ///////CALCULS///////
+    //unary
+    abstract void visit(UnNeg n);
+    //binary
+    abstract void visit(Add n);
+    abstract void visit(Sub n);
+    abstract void visit(Mul n);
+    abstract void visit(Div n);
 
-    abstract void visitEqual(Equal n);
-    abstract void visitNonEqual(NonEqual n);
-    abstract void visitInf(Inf n);
-    abstract void visitSup(Sup n);
-    abstract void visitSupEqual(SupEqual n);
-    abstract void visitInfEqual(InfEqual n);
+    ///////COMPARISONS///////
+    abstract void visit(Equal n);
+    abstract void visit(NonEqual n);
+    abstract void visit(Inf n);
+    abstract void visit(Sup n);
+    abstract void visit(SupEqual n);
+    abstract void visit(InfEqual n);
 
-    abstract void visitAdd(Add n);
-    abstract void visitSub(Sub n);
-
-    abstract void visitMul(Mul n);
-    abstract void visitDiv(Div n);
-    
-    abstract void visitUnNeg(UnNeg n);
-
-    abstract void visitChaine(Chaine n);
-    abstract void visitNum(Num n);
+    ///////KEYWORDS///////
+    abstract void visit(Print n);
+    abstract void visit(Ins n);
+    abstract void visit(Variable n);
+    abstract void visit(Scope n);
 }

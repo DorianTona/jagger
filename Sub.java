@@ -10,7 +10,7 @@ public class Sub extends Exp{
 
     public void accept(Visitor v)
     {
-        v.visitSub(this);
+        v.visit(this);
     }
 
 }
