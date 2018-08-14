@@ -3,17 +3,21 @@ import java.util.HashMap;
 
 public class PrettyPrinter extends Visitor
 {
-	private ArrayList<Scope> data = new ArrayList<Scope>();
+    private Scope scope;
+    private int nbOfScope;
+
+	//constructor
+	public PrettyPrinter(Exp e)
+	{
+		e.accept(this);
+	}
+    public void setScope(Scope s) { scope = s; }
+    public void actualizeVisitorScope(Scope s) { scope.setData(s.getData()); }
+
 	///////TYPES///////
 	public void visit(Num n)
 	{
 		System.out.print(n.aVal);
-	}
-	public void visit(UnNeg n)
-	{
-		System.out.print("(-");
-		n.aVal.accept(this);
-		System.out.print(")");
 	}
 	public void visit(Chaine n)
 	{
@@ -21,6 +25,14 @@ public class PrettyPrinter extends Visitor
 	}
 
 	///////CALCUL///////
+	//unary
+	public void visit(UnNeg n)
+	{
+		System.out.print("(-");
+		n.aVal.accept(this);
+		System.out.print(")");
+	}
+	//binary
 	public void visit(Add n){
 		System.out.print("(");
 		n.lhs.accept(this);
@@ -137,7 +149,13 @@ public class PrettyPrinter extends Visitor
 		}
 	}
 	
-	//////CONDITIONS///////
+	//////KEYWORDS///////
+	public void visit(Print n)
+	{
+		System.out.print("print(");
+		n.aVal.accept(this);
+		System.out.print(")");
+	}
 	public void visit(Ins n)
 	{
 		System.out.print("if(");
@@ -150,53 +168,41 @@ public class PrettyPrinter extends Visitor
 	}
 	public void visit(Variable n)
 	{
-		getInActiveScope(n.aVal).accept(this);
+		System.out.print(n.name);
 	}
-	public void visit(Scope n)
+	public void visit(Scope s)
 	{
-    	data = n.activeScopes;
-		System.out.println("let ");
-		for(Scope data : n.activeScopes){
-			for (String entry : data.data.keySet()) {
-				System.out.print("  ");
-				System.out.print("var "+ entry + " := ");
-				getInActiveScope(entry).accept(this);
-				System.out.println();
-			}
-		}
-		System.out.println("in");
-
-		for (Exp a : n._in) {
-			System.out.print("  ");
-			a.accept(this);
+		nbOfScope++;
+		HashMap<String, Exp> data = scope.getData();
+		System.out.println("let");
+		for (String entry : data.keySet()) {
+			indentScope(nbOfScope); System.out.print("var "+ entry + " := ");
+			scope.getInScope(entry).accept(this);
 			System.out.println();
 		}
-		System.out.println("end");
-	}
 
-	public void visit(Print n)
+		ArrayList<Exp> ins = scope.getInstructions();
+		indentScope(nbOfScope-1); System.out.println("in");
+		for (Exp a : ins) {
+			indentScope(nbOfScope); a.accept(this);
+			System.out.println();
+		}
+		indentScope(nbOfScope-1); System.out.println("end");
+		nbOfScope--;
+	}
+	public void visit(Assignment a)
 	{
-		System.out.print("print(");
-		n.aVal.accept(this);
-		System.out.print(")");
+		System.out.print(a.vName);
+		System.out.print(" := ");
+		a.exp.accept(this);
 	}
 
-	////PRINT//////
-	public void print(Exp e)
-	{
-		e.accept(this);
-	}
+    ///////UTILITAIRES///////
 
-    /////UTILITAIRES/////
-    public Exp getInActiveScope(String s)
-    {       
-        Exp e = null;
-        for(Scope scope:data) {
-            if(scope.hasId(s)) {
-                e = scope.get(s);
-                break;
-            }
-        }
-        return e;
+    public void indentScope(int n)
+    {
+    	for(int i=0 ; i<n ; i++){
+    		System.out.print("  ");
+    	}
     }
 }

@@ -1,10 +1,10 @@
 public class Variable extends Exp
 {
-    public String aVal;
+    public String name;
 
     public Variable(String pVal)
     {
-        aVal = pVal;
+        name = pVal;
     }
     
     public void accept(Visitor v)

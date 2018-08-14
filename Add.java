@@ -1,4 +1,5 @@
-public class Add extends Exp{
+public class Add extends Exp
+{
     public Exp lhs;
     public Exp rhs;
 

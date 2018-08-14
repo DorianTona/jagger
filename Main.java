@@ -7,9 +7,6 @@ import java.io.IOException;
  { 
   public static void main(String args[]) throws ParseException
     {
-    	Jagger parser;
-        parser = new Jagger(System.in);
-        
-        parser.mainloop();
+    	(new Jagger(System.in)).mainloop();
     }
 }

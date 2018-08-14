@@ -1,5 +1,5 @@
+default: cl
 all: javacc classes
-default: all
 
 javacc:
 	java -cp javacc.jar javacc Jagger.jj

@@ -3,53 +3,65 @@ import java.util.HashMap;
 
 public class Scope extends Exp
 {
-    public HashMap<String, Exp> data;
-	public ArrayList<Exp> _in;
+    public Scope parent;
+    private HashMap<String, Exp> data;
+	private ArrayList<Exp> ins;
 
-    public static ArrayList<Scope> activeScopes = new ArrayList<Scope>();
-    public static int currentScope = -1;
-
-    public Scope()
+    //constructor
+    public Scope(Scope s)
     {
         data = new HashMap<String, Exp>();
-        _in = new ArrayList<Exp>();
-        activeScopes.add(this);
-        currentScope++;
+        ins = new ArrayList<Exp>();
+        parent = s;
     }
+
+    //data
+    public HashMap<String, Exp> getData() { return data; }
+    public void setData(HashMap<String, Exp> d) { data = d; }
+
+    public boolean containsKey(String s) { return data.containsKey(s); }
+    public Exp get(String s) { return data.get(s); }
 
     public void addDeclaration(String s, Exp e)
     {
-        data.putIfAbsent(s, e);
-    }
-
-    public void addInstruction(Exp e)
-    {
-        _in.add(e);
+        Eval ev = new Eval(this);
+        e.accept(ev);
+        Num trueValue = new Num(ev.getRes());
+        data.putIfAbsent(s, trueValue);
     }
 
     public void changeValue(String s, Exp e)
     {
-        data.put(s, e);
+        Eval ev = new Eval(this);
+        e.accept(ev);
+        Num trueValue = new Num(ev.getRes());
+        data.remove(s);
+        data.put(s, trueValue);
     }
 
-    public boolean hasId(String s)
+    public Exp getInScope(String s)
     {
-        return data.containsKey(s);
+        if(containsKey(s))
+            return get(s);
+        else
+            return parent.getInScope(s);
     }
 
-    public Exp get(String s)
+    //instruction
+    public ArrayList<Exp> getInstructions()
     {
-        return data.get(s);
+        return ins;
     }
 
-    public void exit()
+    public void addInstruction(Exp e)
     {
-        activeScopes.remove(currentScope);
-        currentScope--;
+        ins.add(e);
     }
     
+    //visitor
     public void accept(Visitor v)
     {
+        v.setScope(this);
         v.visit(this);
     }
 }

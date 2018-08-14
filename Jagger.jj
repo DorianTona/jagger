@@ -1,5 +1,5 @@
 // Options for JavaCC.
-options { LOOKAHEAD=1; FORCE_LA_CHECK=true; }
+options { LOOKAHEAD=2; FORCE_LA_CHECK=true; }
 
 // Fonction principale
 PARSER_BEGIN(Jagger)
@@ -9,8 +9,7 @@ import java.util.HashMap;
 
 public class Jagger
 {
-    static PrettyPrinter pp = new PrettyPrinter();
-    static Eval ev = new Eval();
+    static Scope parent = null;
 }
 
 
@@ -46,70 +45,57 @@ TOKEN:
 }
 
 //let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
+//let var a:=1 in a:=2, print(a) end
 
 // Main loop: read expressions on a line until end of file.
 //  mainloop → (statement)* <EOF>
 void mainloop():
-{ Exp a; }
+{ Exp e; }
 {
-    ( a=statement() )* <EOF>
+    ( e=statement() 
+    { new PrettyPrinter(e); System.out.println(); new Eval(e); parent=null; }
+    )* <EOF>
 }
 
-//  statement → scope | print(comparison())
+//  statement → scope | print(comparison)
 Exp statement():
 { Exp e; }
 {
-    (   
-      e=scope()
-    | <PRINT> <LRB> e=comparison() <RRB> { e = new Print(e); ev.print(e); }
+    ( 
+      e=scope() {}
+    | <PRINT> <LRB> e=comparison() <RRB> { e = new Print(e); }
     )
     { return e; }
 }
 
 //  scope → let (declaration)* in instruction (, instruction)* end
 Exp scope():
-{
-    Exp a, e;
-    Scope s = new Scope();
-}
+{ Exp a, e; Scope s = new Scope(parent); parent=s; }
 {
     <LET>
-        (e = declaration(s))*
+        (declaration(s))*
     <IN>
-        e = instruction(s) (<COMMA> e = instruction(s))*
+        instruction(s) (<COMMA> instruction(s))*
     <END>
-    { 
-        pp.print(s);
-        System.out.println("\nResult :");
-        ev.print(s);
-        s.exit();
-        return s;
-    }
+    { return s; }
 }
 
 //  declaration → (var <VARIABLE> := comparison)*
-Scope declaration(Scope s):
+void declaration(Scope s):
+{ Token t; Exp e; }
 {
-    Token t;
-    Exp e;
-}
-{
-    (
-      <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); } 
-    ) { return s; }
+    <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); }
 }
 
-Exp instruction(Scope s):
-{
-    Exp a; 
-    Token t;
-}
+//  instruction → comparison | statement | variable := comparison
+void instruction(Scope s):
+{ Exp e,a; Token t; }
 {
     (
-      a = scope() { s.addInstruction(a); }
-    | <PRINT> <LRB> a=comparison() <RRB> { s.addInstruction( new Print(a)); }
-    | a=comparison() (<COMMA> a=comparison())*
-    ) { return s; }
+      e=statement()
+    | t=<VARIABLE> <ASSIGNMENT> a=comparison() { e = new Assignment(t.toString(), a, s); }
+    )
+    { s.addInstruction(e); }
 }
 
 // Comparison operators
@@ -125,7 +111,8 @@ Exp comparison():
     | "<"   b=expression()  { a = new Inf(a,b); }
     | ">="  b=expression()  { a = new SupEqual(a,b); }
     | "<="  b=expression()  { a = new InfEqual(a,b); }
-    )? { return a; }
+    )? 
+    { return a; }
 }
 
 // Expression (the axiom).
@@ -158,8 +145,9 @@ Exp term():
 Exp unary():
 { Exp a; }
 {
-      "-" a=ternary() { return a = new UnNeg(a); }
-    | ("+" a=ternary() | a=ternary()) { return a; }
+      "-" a=ternary()   { return a = new UnNeg(a); }
+    | "+" a=ternary()   { return a; }
+    | a=ternary()       { return a; }
 }
 
 //ternary operators
