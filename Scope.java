@@ -1,24 +1,25 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class Scope extends Exp
 {
     public Scope parent;
     private HashMap<String, Exp> data;
 	private ArrayList<Exp> ins;
+    private HashMap<String, Exp> functions;
 
     //constructor
     public Scope(Scope s)
     {
+        parent = s;
         data = new HashMap<String, Exp>();
         ins = new ArrayList<Exp>();
-        parent = s;
+        functions = new HashMap<String, Exp>();
     }
 
     //data
-    public HashMap<String, Exp> getData() { return data; }
-    public void setData(HashMap<String, Exp> d) { data = d; }
-
+    public Set<String> keySet() { return data.keySet(); }
     public boolean containsKey(String s) { return data.containsKey(s); }
     public Exp get(String s) { return data.get(s); }
 
@@ -29,7 +30,6 @@ public class Scope extends Exp
         Num trueValue = new Num(ev.getRes());
         data.putIfAbsent(s, trueValue);
     }
-
     public void changeValue(String s, Exp e)
     {
         Eval ev = new Eval(this);
@@ -38,7 +38,6 @@ public class Scope extends Exp
         data.remove(s);
         data.put(s, trueValue);
     }
-
     public Exp getInScope(String s)
     {
         if(containsKey(s))
@@ -46,22 +45,27 @@ public class Scope extends Exp
         else
             return parent.getInScope(s);
     }
-
+    
     //instruction
     public ArrayList<Exp> getInstructions()
     {
         return ins;
     }
-
     public void addInstruction(Exp e)
     {
         ins.add(e);
+    }
+
+    //functions
+    public void addFunction(Function f)
+    {
+        functions.putIfAbsent(f.name, f);
     }
     
     //visitor
     public void accept(Visitor v)
     {
-        v.setScope(this);
+        //v.setScope(this);
         v.visit(this);
     }
 }

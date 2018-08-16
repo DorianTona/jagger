@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class PrettyPrinter extends Visitor
 {
@@ -12,7 +13,6 @@ public class PrettyPrinter extends Visitor
 		e.accept(this);
 	}
     public void setScope(Scope s) { scope = s; }
-    public void actualizeVisitorScope(Scope s) { scope.setData(s.getData()); }
 
 	///////TYPES///////
 	public void visit(Num n)
@@ -172,10 +172,10 @@ public class PrettyPrinter extends Visitor
 	}
 	public void visit(Scope s)
 	{
+		scope = s;
 		nbOfScope++;
-		HashMap<String, Exp> data = scope.getData();
 		System.out.println("let");
-		for (String entry : data.keySet()) {
+		for (String entry : scope.keySet()) {
 			indentScope(nbOfScope); System.out.print("var "+ entry + " := ");
 			scope.getInScope(entry).accept(this);
 			System.out.println();
@@ -189,6 +189,7 @@ public class PrettyPrinter extends Visitor
 		}
 		indentScope(nbOfScope-1); System.out.println("end");
 		nbOfScope--;
+		scope = s.parent;
 	}
 	public void visit(Assignment a)
 	{
@@ -196,6 +197,10 @@ public class PrettyPrinter extends Visitor
 		System.out.print(" := ");
 		a.exp.accept(this);
 	}
+    public void visit(Function n)
+    {
+
+    }
 
     ///////UTILITAIRES///////
 

@@ -29,4 +29,5 @@ public abstract class Visitor
     abstract void visit(Variable n);
     abstract void visit(Scope n);
     abstract void visit(Assignment n);
+    abstract void visit(Function n);
 }

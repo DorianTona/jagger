@@ -33,15 +33,19 @@ TOKEN:
 |   < IN: "in" >
 |   < END: "end" >
 
+|   < FUNCTION: "function" >
+
     //Other tokens
-|   < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                        // A decimal number.
-|   < DIGIT: ["0"-"9"] >                                            // A decimal digit.
-|   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >                 // string
-|   < LRB: "(" >                                                    // Left Round Bracket
-|   < RRB: ")" >                                                    // Right Round BRacket
-|   < VARIABLE: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
+|   < #DIGIT: ["0"-"9"] >                                     // A decimal digit.
+|   < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                  // A decimal number.
+|   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >           // string
+|   < LRB: "(" >                                              // Left Round Bracket
+|   < RRB: ")" >                                              // Right Round BRacket
+|   < ID: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
 |   < ASSIGNMENT: ":=" >
+|   < FASSIGNMENT: "=" >
 |   < COMMA: "," >
+|   < SEMICOLON: ";" >
 }
 
 //let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
@@ -53,7 +57,7 @@ void mainloop():
 { Exp e; }
 {
     ( e=statement() 
-    { new PrettyPrinter(e); System.out.println(); new Eval(e); parent=null; }
+    { new PrettyPrinter(e); System.out.println(); new Eval(e); parent=null; } 
     )* <EOF>
 }
 
@@ -62,7 +66,7 @@ Exp statement():
 { Exp e; }
 {
     ( 
-      e=scope() {}
+      e=scope()
     | <PRINT> <LRB> e=comparison() <RRB> { e = new Print(e); }
     )
     { return e; }
@@ -80,22 +84,45 @@ Exp scope():
     { return s; }
 }
 
-//  declaration → (var <VARIABLE> := comparison)*
+//  declaration → (var <ID> := comparison)*
 void declaration(Scope s):
-{ Token t; Exp e; }
+{ Token t; Exp e; Function f; }
 {
-    <VAR> t=<VARIABLE> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); }
+    (
+      <VAR> t=<ID> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); }
+    | <FUNCTION> f=functionDeclaration() { s.addFunction(f); }
+    ) 
 }
 
 //  instruction → comparison | statement | variable := comparison
 void instruction(Scope s):
-{ Exp e,a; Token t; }
+{ Exp e; Token t; }
 {
     (
       e=statement()
-    | t=<VARIABLE> <ASSIGNMENT> a=comparison() { e = new Assignment(t.toString(), a, s); }
+    | e=comparison()
+    | t=<ID> <ASSIGNMENT> e=comparison() { e = new Assignment(t.toString(), e, s); }
     )
     { s.addInstruction(e); }
+}
+
+//  function → funtion <ID> <LRB> <ID>(, <ID>)*)? <RRB> = statement
+Function functionDeclaration():
+{ Token t; Exp e; Function f = new Function(parent); }
+{
+    t=<ID> <LRB> (e=variable() {f.addParam(e);}(<COMMA> e=variable() {f.addParam(e);})*)? <RRB> <FASSIGNMENT> e=statement()
+    { 
+        f.name = t.toString();
+        f.setIns(e);
+        return f; 
+    }
+}
+
+Function functionCall():
+{ Token t; Exp e; Function f = new Function(parent); }
+{
+    t=<ID> <LRB> (e=comparison() {f.addParam(e);}(<COMMA> e=comparison() {f.addParam(e);})*)? <RRB>
+    { f.name = t.toString(); return f; }
 }
 
 // Comparison operators
@@ -111,7 +138,7 @@ Exp comparison():
     | "<"   b=expression()  { a = new Inf(a,b); }
     | ">="  b=expression()  { a = new SupEqual(a,b); }
     | "<="  b=expression()  { a = new InfEqual(a,b); }
-    )? 
+    )?
     { return a; }
 }
 
@@ -145,9 +172,9 @@ Exp term():
 Exp unary():
 { Exp a; }
 {
-      "-" a=ternary()   { return a = new UnNeg(a); }
-    | "+" a=ternary()   { return a; }
-    | a=ternary()       { return a; }
+    ( "-" a=ternary()   { a = new UnNeg(a); }
+    | ("+")? a=ternary()
+    ) { return a; }
 }
 
 //ternary operators
@@ -156,18 +183,27 @@ Exp ternary():
 { Exp a,b,c; }
 {   
     (
-      <IF> a=comparison() <THEN> b=comparison() <ELSE> c=comparison() {  a = new Ins(a,b,c); }
-    | a=factor()
+      a=factor()
+    | <IF> a=comparison() <THEN> b=comparison() <ELSE> c=comparison() { a = new Ins(a,b,c); } 
     )+ { return a; }
 }
 
 // Factor of an expression.
-// F -> <NUMBER> | <STRING> | <VARIABLE> | "(" E ")"
+// F -> <NUMBER> | <STRING> | <ID> | "(" E ")"
 Exp factor():
 { Token t; Exp e;}
 {
-      t=<NUMBER> { return new Num(Double.parseDouble(t.toString())); }
-    | t=<STRING> { return new Chaine(t.toString()); }
-    | t=<VARIABLE> { return new Variable(t.toString()); }
-    | <LRB> e=comparison() <RRB> { return e; }
+    ( t=<NUMBER> { e = new Num(Double.parseDouble(t.toString())); }
+    | <LRB> e=comparison() <RRB>
+    | t=<STRING> { e = new Chaine(t.toString()); }
+    | e=variable()
+    | e=functionCall()
+    ) { return e; }
+}
+
+//has its own function for convenience
+Exp variable():
+{ Token t; }
+{
+    t=<ID> { return new Variable(t.toString()); }
 }

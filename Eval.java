@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class Eval extends Visitor
 {
@@ -23,7 +24,6 @@ public class Eval extends Visitor
 	}
 
     public void setScope(Scope s) { scope = s; }
-    public void actualizeVisitorScope(Scope s) { scope.setData(s.getData()); }
 
     public double getRes() { return res; }
 
@@ -282,12 +282,18 @@ public class Eval extends Visitor
     }
     public void visit(Scope s)
     {
+    	scope = s;
         for (Exp a : s.getInstructions()) {
             a.accept(this);
         }
+        scope = s.parent;
     }
 	public void visit(Assignment a)
 	{
 		a.scope.changeValue(a.vName, a.exp);
 	}
+    public void visit(Function n)
+    {
+
+    }
 }
