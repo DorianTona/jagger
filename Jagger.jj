@@ -56,7 +56,7 @@ TOKEN:
 void mainloop():
 { Exp e; }
 {
-    ( e=statement() 
+    ( e=statement()
     { new PrettyPrinter(e); System.out.println(); new Eval(e); parent=null; } 
     )* <EOF>
 }
@@ -100,8 +100,8 @@ void instruction(Scope s):
 {
     (
       e=statement()
+    | t=<ID> <ASSIGNMENT> e=comparison() { e=new Assignment(t.toString(), e, s); }
     | e=comparison()
-    | t=<ID> <ASSIGNMENT> e=comparison() { e = new Assignment(t.toString(), e, s); }
     )
     { s.addInstruction(e); }
 }
@@ -125,7 +125,7 @@ Function functionCall():
     { f.name = t.toString(); return f; }
 }
 
-// Comparison operators
+// Comparison operators. Separated to avoid 1>0>1 true (because 1>0=1)
 // C -> E ('=='E | '<>'E | '>'E | '<'E | '>='E | '<='E)*
 Exp comparison():
 { Exp a,b; }
