@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Function extends Exp
@@ -7,25 +8,25 @@ public class Function extends Exp
     public Scope parent;
     public String name;
     private ArrayList<Exp> params;
+    private ArrayList<Exp> ins;
     private HashMap<String,Exp> bindedParams;
-	private Exp ins;
 
     //constructor
-    public Function(Scope s, String str, ArrayList<Exp> p, Exp e)
+    public Function(Scope s, String str)
     {
         parent = s;
         name = str;
-        params = p;
-        ins = e;
+        params = new ArrayList<Exp>();
+        ins = new ArrayList<Exp>();
     }
     public Function(Scope s)
     {
-        this(s, null, null, null);
+        this(s, null);
     }
 
     //params
-    public ArrayList<Exp> getParams() { return params; }
     public void addParam(Exp e) { params.add(e); }
+    public ArrayList<Exp> getParams() { return params; }
     public int nbParams() { return params.size(); }
 
     public void bindParams(Function f)
@@ -35,7 +36,7 @@ public class Function extends Exp
             bindedParams = new HashMap<String,Exp>();
             Iterator<Exp> variables = params.iterator();
             Iterator<Exp> values = f.getParams().iterator();
-            while(variables.hasNext())
+            while(!variables.hasNext())
                 bindedParams.put(((Variable)variables.next()).name, values.next());
         }
     }
@@ -49,7 +50,8 @@ public class Function extends Exp
     }
 
     //ins
-    public void setIns(Exp e) { ins = e; }
+    public void addIns(Exp e) { ins.add(e); }
+    public ArrayList<Exp> getIns() { return ins; }
     
     //visitor
     public void accept(Visitor v)

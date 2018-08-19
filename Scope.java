@@ -7,7 +7,7 @@ public class Scope extends Exp
     public Scope parent;
     private HashMap<String, Exp> data;
 	private ArrayList<Exp> ins;
-    private HashMap<String, Exp> functions;
+    private HashMap<String, Function> functions;
 
     //constructor
     public Scope(Scope s)
@@ -15,13 +15,14 @@ public class Scope extends Exp
         parent = s;
         data = new HashMap<String, Exp>();
         ins = new ArrayList<Exp>();
-        functions = new HashMap<String, Exp>();
+        functions = new HashMap<String, Function>();
     }
 
     //data
-    public Set<String> keySet() { return data.keySet(); }
-    public boolean containsKey(String s) { return data.containsKey(s); }
-    public Exp get(String s) { return data.get(s); }
+    public Set<String> dataKeySet() { return data.keySet(); }
+    public boolean dataContainsKey(String s) { return data.containsKey(s); }
+    public boolean dataIsEmpty() { return data.isEmpty(); }
+    public Exp dataGet(String s) { return data.get(s); }
 
     public void addDeclaration(String s, Exp e)
     {
@@ -40,8 +41,8 @@ public class Scope extends Exp
     }
     public Exp getInScope(String s)
     {
-        if(containsKey(s))
-            return get(s);
+        if(dataContainsKey(s))
+            return dataGet(s);
         else
             return parent.getInScope(s);
     }
@@ -57,9 +58,22 @@ public class Scope extends Exp
     }
 
     //functions
+    public Set<String> fKeySet() { return functions.keySet(); }
+    public boolean fContainsKey(String s) { return functions.containsKey(s); }
+    public boolean fIsEmpty() { return functions.isEmpty(); }
+    public Function fGet(String s) { return functions.get(s); }
+
     public void addFunction(Function f)
     {
         functions.putIfAbsent(f.name, f);
+    }
+
+    public Exp fGetInScope(String s)
+    {
+        if(fContainsKey(s))
+            return fGet(s);
+        else
+            return parent.fGetInScope(s);
     }
     
     //visitor

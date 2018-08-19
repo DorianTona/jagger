@@ -23,58 +23,68 @@ TOKEN:
 {
     //Keywords
     < PRINT: "print" >
+|   < LRB: "(" >                                              // Left Round Bracket
+|   < RRB: ")" >                                              // Right Round BRacket
 
 |   < IF: "if" >
 |   < THEN: "then" >
 |   < ELSE: "else" >
 
 |   < LET: "let" >
+|   < ASSIGN: ":=" >
+|   < FASSIGN: "=" >
 |   < VAR: "var" >
 |   < IN: "in" >
+|   < COMMA: "," >
 |   < END: "end" >
 
 |   < FUNCTION: "function" >
+|   < SEMICOLON: ";" >
 
-    //Other tokens
+    //Types
 |   < #DIGIT: ["0"-"9"] >                                     // A decimal digit.
 |   < NUMBER: (<DIGIT>)+ ("." (<DIGIT>)*)? >                  // A decimal number.
 |   < STRING: "\"" ((~["\n", "\r", "\""])*)? "\"" >           // string
-|   < LRB: "(" >                                              // Left Round Bracket
-|   < RRB: ")" >                                              // Right Round BRacket
 |   < ID: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
-|   < ASSIGNMENT: ":=" >
-|   < FASSIGNMENT: "=" >
-|   < COMMA: "," >
-|   < SEMICOLON: ";" >
 }
 
 //let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
 //let var a:=1 in a:=2, print(a) end
+//let in let in 1 end + let in 2 end end
 
 // Main loop: read expressions on a line until end of file.
-//  mainloop → (statement)* <EOF>
+//  mainloop → (print | scope)* <EOF>
 void mainloop():
 { Exp e; }
 {
-    ( e=statement()
+    ( ( e=print() | e=scope() )
     { new PrettyPrinter(e); System.out.println(); new Eval(e); parent=null; } 
     )* <EOF>
 }
 
-//  statement → scope | print(comparison)
+//possible instructions
+//  statement → print | functionCall | comparison
 Exp statement():
 { Exp e; }
 {
-    ( 
-      e=scope()
-    | <PRINT> <LRB> e=comparison() <RRB> { e = new Print(e); }
+    ( e=print() 
+    | e=functionCall() 
+    | e=comparison() 
     )
     { return e; }
 }
 
+//has its own function for convenience
+//  print → print(comparison)
+Exp print():
+{ Exp e; }
+{
+    <PRINT> <LRB> e=comparison() <RRB> { return new Print(e); }
+}
+
 //  scope → let (declaration)* in instruction (, instruction)* end
 Exp scope():
-{ Exp a, e; Scope s = new Scope(parent); parent=s; }
+{ Scope s = new Scope(parent); parent=s; }
 {
     <LET>
         (declaration(s))*
@@ -89,35 +99,32 @@ void declaration(Scope s):
 { Token t; Exp e; Function f; }
 {
     (
-      <VAR> t=<ID> <ASSIGNMENT> e=comparison() { s.addDeclaration(t.toString(), e); }
+      <VAR> t=<ID> <ASSIGN> e=comparison() { s.addDeclaration(t.toString(), e); }
     | <FUNCTION> f=functionDeclaration() { s.addFunction(f); }
     ) 
 }
 
-//  instruction → comparison | statement | variable := comparison
+//  instruction → statement | variable := comparison
 void instruction(Scope s):
 { Exp e; Token t; }
 {
     (
-      e=statement()
-    | t=<ID> <ASSIGNMENT> e=comparison() { e=new Assignment(t.toString(), e, s); }
-    | e=comparison()
+      t=<ID> <ASSIGN> e=comparison() { e=new Assignment(t.toString(), e, s); }
+    | e=statement()
     )
     { s.addInstruction(e); }
 }
 
-//  function → funtion <ID> <LRB> <ID>(, <ID>)*)? <RRB> = statement
+//  function → funtion <ID> ( <ID>(, <ID>)*)? ) = statement
 Function functionDeclaration():
 { Token t; Exp e; Function f = new Function(parent); }
 {
-    t=<ID> <LRB> (e=variable() {f.addParam(e);}(<COMMA> e=variable() {f.addParam(e);})*)? <RRB> <FASSIGNMENT> e=statement()
-    { 
-        f.name = t.toString();
-        f.setIns(e);
-        return f; 
-    }
+    t=<ID> {f.name = t.toString();} <LRB> (e=variable() {f.addParam(e);}(<COMMA> e=variable() {f.addParam(e);})*)? <RRB>
+    <FASSIGN> (e=statement() {f.addIns(e);} | <LRB> (e=statement() {f.addIns(e);} <SEMICOLON>)+ <RRB> )
+    { return f; }
 }
 
+//  function → funtion <ID> <LRB> <ID>(, <ID>)*)? <RRB>
 Function functionCall():
 { Token t; Exp e; Function f = new Function(parent); }
 {
@@ -130,6 +137,7 @@ Function functionCall():
 Exp comparison():
 { Exp a,b; }
 {
+    
     a=expression()
     (
       "=="  b=expression()  { a = new Equal(a,b); }
@@ -160,11 +168,11 @@ Exp expression():
 Exp term():
 { Exp a,b; }
 {
-    a=unary()
-    (
+    a=unary() (
       "*" b=term() { a = new Mul(a,b); }
     | "/" b=term() { a = new Div(a,b); }
-    )* { return a; }
+    )*
+    { return a; }
 }
 
 // Unary operator.
@@ -182,9 +190,9 @@ Exp unary():
 Exp ternary():
 { Exp a,b,c; }
 {   
-    (
-      a=factor()
+    ( a=scope()
     | <IF> a=comparison() <THEN> b=comparison() <ELSE> c=comparison() { a = new Ins(a,b,c); } 
+    | a=factor()
     )+ { return a; }
 }
 
@@ -197,7 +205,6 @@ Exp factor():
     | <LRB> e=comparison() <RRB>
     | t=<STRING> { e = new Chaine(t.toString()); }
     | e=variable()
-    | e=functionCall()
     ) { return e; }
 }
 

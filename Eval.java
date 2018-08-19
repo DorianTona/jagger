@@ -294,6 +294,9 @@ public class Eval extends Visitor
 	}
     public void visit(Function n)
     {
-
+    	scope.fGet(n.name).bindParams(n);    	
+        for (Exp a : n.getIns()) {
+            a.accept(this);
+        }
     }
 }

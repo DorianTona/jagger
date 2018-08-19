@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.Iterator;
 
 public class PrettyPrinter extends Visitor
 {
@@ -175,11 +175,28 @@ public class PrettyPrinter extends Visitor
 		scope = s;
 		nbOfScope++;
 		System.out.println("let");
-		for (String entry : scope.keySet()) {
-			indentScope(nbOfScope); System.out.print("var "+ entry + " := ");
-			scope.getInScope(entry).accept(this);
-			System.out.println();
-		}
+		//variables
+		if(!s.dataIsEmpty())
+			for (String entry : scope.dataKeySet()) {
+				indentScope(nbOfScope); System.out.print("var "+ entry + " := ");
+				scope.getInScope(entry).accept(this);
+				System.out.println();
+			}
+		//functions
+		if(!s.fIsEmpty())
+			for (String entry : scope.fKeySet()) {
+				Function f = (Function)scope.fGetInScope(entry);
+				indentScope(nbOfScope); System.out.print("function ");
+				f.accept(this);
+				System.out.print(" = ");
+				Iterator<Exp> i = f.getIns().iterator();
+				while(i.hasNext())	{
+					i.next().accept(this);
+					if(i.hasNext())
+						System.out.print("; ");
+				}
+				System.out.println();
+			}
 
 		ArrayList<Exp> ins = scope.getInstructions();
 		indentScope(nbOfScope-1); System.out.println("in");
@@ -199,7 +216,14 @@ public class PrettyPrinter extends Visitor
 	}
     public void visit(Function n)
     {
-
+    	System.out.print(n.name + "(");
+    	Iterator<Exp> p = n.getParams().iterator();
+		while(p.hasNext())	{
+			p.next().accept(this);
+			if(p.hasNext())
+				System.out.print(",");
+		}
+		System.out.print(")");
     }
 
     ///////UTILITAIRES///////
