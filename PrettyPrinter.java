@@ -12,7 +12,10 @@ public class PrettyPrinter extends Visitor
 	{
 		e.accept(this);
 	}
-    public void setScope(Scope s) { scope = s; }
+	public PrettyPrinter(Scope s)
+	{
+		scope = s;
+	}
 
 	///////TYPES///////
 	public void visit(Num n)
@@ -91,13 +94,14 @@ public class PrettyPrinter extends Visitor
 			System.out.print(".Length < ");
 			n.rhs.accept(this);
 			System.out.print(".Length)");
-		} else {
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
 			System.out.print("(");
 			n.lhs.accept(this);
 			System.out.print(" < ");
 			n.rhs.accept(this);
 			System.out.print(")");
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 	public void visit(InfEqual n)
 	{
@@ -107,13 +111,14 @@ public class PrettyPrinter extends Visitor
 			System.out.print(".Length <= ");
 			n.rhs.accept(this);
 			System.out.print(".Length)");
-		} else {
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
 			System.out.print("(");
 			n.lhs.accept(this);
 			System.out.print(" <= ");
 			n.rhs.accept(this);
 			System.out.print(")");
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 
 	public void visit(Sup n)
@@ -124,13 +129,14 @@ public class PrettyPrinter extends Visitor
 			System.out.print(".Length > ");
 			n.rhs.accept(this);
 			System.out.print(".Length)");
-		} else {
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
 			System.out.print("(");
 			n.lhs.accept(this);
 			System.out.print(" > ");
 			n.rhs.accept(this);
 			System.out.print(")");
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 	public void visit(SupEqual n)
 	{
@@ -140,13 +146,14 @@ public class PrettyPrinter extends Visitor
 			System.out.print(".Length >= ");
 			n.rhs.accept(this);
 			System.out.print(".Length)");
-		} else {
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
 			System.out.print("(");
 			n.lhs.accept(this);
 			System.out.print(" >= ");
 			n.rhs.accept(this);
 			System.out.print(")");
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 	
 	//////KEYWORDS///////
@@ -227,7 +234,6 @@ public class PrettyPrinter extends Visitor
     }
 
     ///////UTILITAIRES///////
-
     public void indentScope(int n)
     {
     	for(int i=0 ; i<n ; i++){

@@ -1,7 +1,5 @@
 public abstract class Visitor
 {
-    abstract void setScope(Scope s);
-
     ///////TYPES///////
     abstract void visit(Chaine n);
     abstract void visit(Num n);

@@ -23,13 +23,11 @@ public class Eval extends Visitor
 		scope = s;
 	}
 
-    public void setScope(Scope s) { scope = s; }
-
     public double getRes() { return res; }
 
     ///////TYPES///////
-	public void visit(Num pVal) {
-		res = pVal.aVal;
+	public void visit(Num n) {
+		res = n.aVal;
 		sRes = Double.toString(res);
 	}
     public void visit(Chaine n)
@@ -39,215 +37,181 @@ public class Eval extends Visitor
 
     ///////CALCUL///////
     //unary
-	public void visit(UnNeg pVal){
-		pVal.aVal.accept(this);
+	public void visit(UnNeg n){
+		n.aVal.accept(this);
 		res = -res;
 		sRes = Double.toString(res);
 	}
 
 	//binary
-	public void visit(Add pVal) {
-		//Transform variables into expressions
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-    	    pVal.lhs.accept(this);
+	public void visit(Add n) 
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+    	    n.lhs.accept(this);
     	    String temp = sRes.replace("\"", "");
-    	    pVal.rhs.accept(this);
+    	    n.rhs.accept(this);
     	    sRes = "\""+temp + sRes.replace("\"", "") + "\"";
-    	} else {
-			pVal.lhs.accept(this);
+    	} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = temp + res;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(Sub pVal) {
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		pVal.lhs.accept(this);
-		double temp = res;
-		pVal.rhs.accept(this);
-		res = temp - res;
-		sRes = Double.toString(res);
+	public void visit(Sub n) 
+	{
+		if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
+			double temp = res;
+			n.rhs.accept(this);
+			res = temp - res;
+			sRes = Double.toString(res);
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(Mul pVal) {
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		pVal.lhs.accept(this);
-		double temp = res;
-		pVal.rhs.accept(this);
-		res = temp * res;
-		sRes = Double.toString(res);
+	public void visit(Mul n) 
+	{
+		if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) 
+		{
+			n.lhs.accept(this);
+			double temp = res;
+			n.rhs.accept(this);
+			res = temp * res;
+			sRes = Double.toString(res);
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(Div pVal) {
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		pVal.lhs.accept(this);
-		double temp = res;
-		pVal.rhs.accept(this);
-		res = temp / res;
-		sRes = Double.toString(res);
+	public void visit(Div n) 
+	{
+		if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) 
+		{
+			n.lhs.accept(this);
+			double temp = res;
+			n.rhs.accept(this);
+			res = temp / res;
+			sRes = Double.toString(res);
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 
     ///////COMPARISONS///////
-	public void visit(Sup pVal) {
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(Sup n) 
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			double temp = sRes.length();
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(temp > sRes.length())
 				sRes = "1";
 			else
 				sRes = "0";
-		} else {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp > res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(SupEqual pVal){
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(SupEqual n)
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			double temp = sRes.length();
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(temp >= sRes.length())
 				sRes = "1";
 			else
 				sRes = "0";
-		} else {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp >= res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 
-	public void visit(Inf pVal) {
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(Inf n) 
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			double temp = sRes.length();
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(temp < sRes.length())
 				sRes = "1";
 			else
 				sRes = "0";
-		} else  {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp < res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(InfEqual pVal){
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(InfEqual n)
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			double temp = sRes.length();
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(temp <= sRes.length())
 				sRes = "1";
 			else
 				sRes = "0";
-		} else {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp <= res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 
-	public void visit(Equal pVal){
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(Equal n)
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			String temp = sRes;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(temp.equals(sRes))
 				sRes = "1";
 			else
 				sRes = "0";
-		} else {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp == res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
-	public void visit(NonEqual pVal){
-		if(pVal.lhs instanceof Variable){
-			pVal.lhs = scope.getInScope(((Variable)pVal.lhs).name);
-		}
-		if(pVal.rhs instanceof Variable){
-			pVal.rhs = scope.getInScope(((Variable)pVal.rhs).name);
-		}
-		if(pVal.lhs instanceof Chaine && pVal.rhs instanceof Chaine) {
-			pVal.lhs.accept(this);
+	public void visit(NonEqual n)
+	{
+		if(n.lhs instanceof Chaine && n.rhs instanceof Chaine) {
+			n.lhs.accept(this);
 			String temp = sRes;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			if(!temp.equals(sRes))
 				sRes = "1";
 			else
 				sRes = "0";
-		} else {
-			pVal.lhs.accept(this);
+		} else if(!(n.lhs instanceof Chaine) && !(n.rhs instanceof Chaine)) {
+			n.lhs.accept(this);
 			double temp = res;
-			pVal.rhs.accept(this);
+			n.rhs.accept(this);
 			res = (temp != res)?1:0;
 			sRes = Double.toString(res);
-		}
+		} else
+		System.out.println("These types can not be operated together.");
 	}
 
 	///////KEYWORDS///////
@@ -258,16 +222,6 @@ public class Eval extends Visitor
 	}
 	public void visit(Ins n)
     {
-    	if(n.cond instanceof Variable){
-			n.cond = scope.getInScope(((Variable)n.cond).name);
-		}
-		if(n.expThen instanceof Variable){
-			n.expThen = scope.getInScope(((Variable)n.expThen).name);
-		}
-		if(n.expElse instanceof Variable){
-			n.expElse = scope.getInScope(((Variable)n.expElse).name);
-		}
-
 	    n.cond.accept(this);
 		if(this.res == 1) {
 			n.expThen.accept(this);
@@ -294,9 +248,12 @@ public class Eval extends Visitor
 	}
     public void visit(Function n)
     {
-    	scope.fGet(n.name).bindParams(n);    	
-        for (Exp a : n.getIns()) {
+    	Function f = scope.fGet(n.name);
+    	f.bindParams(n);
+    	scope.setBindedFunction(f);
+        for (Exp a : f.getIns()) {
             a.accept(this);
         }
+        scope.setBindedFunction(null);
     }
 }

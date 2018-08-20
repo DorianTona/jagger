@@ -9,7 +9,7 @@ public class Function extends Exp
     public String name;
     private ArrayList<Exp> params;
     private ArrayList<Exp> ins;
-    private HashMap<String,Exp> bindedParams;
+    public HashMap<String,Exp> bindedParams;
 
     //constructor
     public Function(Scope s, String str)
@@ -18,6 +18,7 @@ public class Function extends Exp
         name = str;
         params = new ArrayList<Exp>();
         ins = new ArrayList<Exp>();
+        bindedParams = new HashMap<String,Exp>();
     }
     public Function(Scope s)
     {
@@ -29,24 +30,31 @@ public class Function extends Exp
     public ArrayList<Exp> getParams() { return params; }
     public int nbParams() { return params.size(); }
 
+    //binds the parameters of the function created by functionCall
+    //to the parameters of the function saved in the scope
     public void bindParams(Function f)
     {
-        if(this.nbParams() != f.nbParams())
+        if(this.nbParams() == f.nbParams())
         {
             bindedParams = new HashMap<String,Exp>();
             Iterator<Exp> variables = params.iterator();
             Iterator<Exp> values = f.getParams().iterator();
-            while(!variables.hasNext())
+            while(variables.hasNext()) {
                 bindedParams.put(((Variable)variables.next()).name, values.next());
+            }
+            //System.out.println(bindedParams.size());
+        } else {
+            System.out.println("Wrong number of prameters.");
         }
     }
 
     public Exp getInScope(String s)
     {
-        if(bindedParams.containsKey(s))
+        if(bindedParams.containsKey(s)) {
             return bindedParams.get(s);
-        else
+        } else {
             return parent.getInScope(s);
+        }
     }
 
     //ins
@@ -56,7 +64,6 @@ public class Function extends Exp
     //visitor
     public void accept(Visitor v)
     {
-        //v.setScope(this);
         v.visit(this);
     }
 }

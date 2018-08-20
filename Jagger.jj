@@ -48,9 +48,18 @@ TOKEN:
 |   < ID: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
 }
 
+//common examples to try
+
+//working
 //let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
 //let var a:=1 in a:=2, print(a) end
+//let var a:=1 function b()=2 in print(a), a:=b(), print(a) end
+//let var a:=1 function a(a,b)=2 in print(a), a:=a(0,0), print(a) end
+//let function a(a)=print(a*2) in a(333) end
+
+//not working
 //let in let in 1 end + let in 2 end end
+//let function a(a)=a:=a var a:=1 in a(2), print(a) end
 
 // Main loop: read expressions on a line until end of file.
 //  mainloop → (print | scope)* <EOF>
@@ -191,6 +200,7 @@ Exp ternary():
 { Exp a,b,c; }
 {   
     ( a=scope()
+    | a=functionCall()
     | <IF> a=comparison() <THEN> b=comparison() <ELSE> c=comparison() { a = new Ins(a,b,c); } 
     | a=factor()
     )+ { return a; }

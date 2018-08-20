@@ -8,6 +8,7 @@ public class Scope extends Exp
     private HashMap<String, Exp> data;
 	private ArrayList<Exp> ins;
     private HashMap<String, Function> functions;
+    private Function bindedFunction;
 
     //constructor
     public Scope(Scope s)
@@ -20,7 +21,6 @@ public class Scope extends Exp
 
     //data
     public Set<String> dataKeySet() { return data.keySet(); }
-    public boolean dataContainsKey(String s) { return data.containsKey(s); }
     public boolean dataIsEmpty() { return data.isEmpty(); }
     public Exp dataGet(String s) { return data.get(s); }
 
@@ -41,10 +41,19 @@ public class Scope extends Exp
     }
     public Exp getInScope(String s)
     {
-        if(dataContainsKey(s))
+        //if a function is binded, search for parameters before searching for scope variables
+        if(bindedFunction != null)
+            if(bindedFunction.bindedParams.containsKey(s))
+                return bindedFunction.bindedParams.get(s);
+
+        if(data.containsKey(s))
             return dataGet(s);
-        else
+        else if(parent != null)            
             return parent.getInScope(s);
+        else{
+            System.out.println("This variable does not exist in current scope");
+            return null;
+        }
     }
     
     //instruction
@@ -59,9 +68,9 @@ public class Scope extends Exp
 
     //functions
     public Set<String> fKeySet() { return functions.keySet(); }
-    public boolean fContainsKey(String s) { return functions.containsKey(s); }
     public boolean fIsEmpty() { return functions.isEmpty(); }
     public Function fGet(String s) { return functions.get(s); }
+    public void setBindedFunction(Function f) { bindedFunction = f; }
 
     public void addFunction(Function f)
     {
@@ -70,7 +79,7 @@ public class Scope extends Exp
 
     public Exp fGetInScope(String s)
     {
-        if(fContainsKey(s))
+        if(functions.containsKey(s))
             return fGet(s);
         else
             return parent.fGetInScope(s);
@@ -79,7 +88,6 @@ public class Scope extends Exp
     //visitor
     public void accept(Visitor v)
     {
-        //v.setScope(this);
         v.visit(this);
     }
 }
