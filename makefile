@@ -19,7 +19,7 @@ clean:
 	$(RM) Jagger.java
 
 cl: all	#command-line
-	java Main
+	java Jagger
 
 check: all
 	java TestCheck

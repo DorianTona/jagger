@@ -10,6 +10,11 @@ import java.util.HashMap;
 public class Jagger
 {
     static Scope parent = null;
+
+    public static void main(String args[]) throws ParseException
+    {
+        (new Jagger(System.in)).mainloop();
+    }
 }
 
 
@@ -48,18 +53,15 @@ TOKEN:
 |   < ID: ["a"-"z", "A"-"Z"](["a"-"z", "A"-"Z","0"-"9"])* >   // variable
 }
 
-//common examples to try
-
-//working
+//common examples to try out
 //let var i := 10 in print(i), let var i := i * i in print(i) end, print(i) end
 //let var a:=1 in a:=2, print(a) end
 //let var a:=1 function b()=2 in print(a), a:=b(), print(a) end
 //let var a:=1 function a(a,b)=2 in print(a), a:=a(0,0), print(a) end
 //let function a(a)=print(a*2) in a(333) end
-
-//not working
-//let in let in 1 end + let in 2 end end
 //let function a(a)=a:=a var a:=1 in a(2), print(a) end
+//let function a()=(print(1);print(2)) in a() end
+//let in print(let in 1 end + let in 2 end) end
 
 // Main loop: read expressions on a line until end of file.
 //  mainloop → (print | scope)* <EOF>
@@ -74,11 +76,12 @@ void mainloop():
 //possible instructions
 //  statement → print | functionCall | comparison
 Exp statement():
-{ Exp e; }
+{ Token t; Exp e; }
 {
-    ( e=print() 
+    ( t=<ID> <ASSIGN> e=comparison() { e=new Assignment(t.toString(), e, parent); }
+    | e=print()
     | e=functionCall() 
-    | e=comparison() 
+    | e=comparison()
     )
     { return e; }
 }
@@ -93,43 +96,33 @@ Exp print():
 
 //  scope → let (declaration)* in instruction (, instruction)* end
 Exp scope():
-{ Scope s = new Scope(parent); parent=s; }
+{ Exp e; Scope s = new Scope(parent); parent=s; }
 {
     <LET>
-        (declaration(s))*
+        (declaration())*
     <IN>
-        instruction(s) (<COMMA> instruction(s))*
+        e=statement() { s.addInstruction(e); } (<COMMA> e=statement() { s.addInstruction(e); })*
     <END>
     { return s; }
 }
 
 //  declaration → (var <ID> := comparison)*
-void declaration(Scope s):
+void declaration():
 { Token t; Exp e; Function f; }
 {
     (
-      <VAR> t=<ID> <ASSIGN> e=comparison() { s.addDeclaration(t.toString(), e); }
-    | <FUNCTION> f=functionDeclaration() { s.addFunction(f); }
+      <VAR> t=<ID> <ASSIGN> e=comparison() { parent.addDeclaration(t.toString(), e); }
+    | <FUNCTION> f=functionDeclaration() { parent.addFunction(f); }
     ) 
-}
-
-//  instruction → statement | variable := comparison
-void instruction(Scope s):
-{ Exp e; Token t; }
-{
-    (
-      t=<ID> <ASSIGN> e=comparison() { e=new Assignment(t.toString(), e, s); }
-    | e=statement()
-    )
-    { s.addInstruction(e); }
 }
 
 //  function → funtion <ID> ( <ID>(, <ID>)*)? ) = statement
 Function functionDeclaration():
 { Token t; Exp e; Function f = new Function(parent); }
 {
-    t=<ID> {f.name = t.toString();} <LRB> (e=variable() {f.addParam(e);}(<COMMA> e=variable() {f.addParam(e);})*)? <RRB>
-    <FASSIGN> (e=statement() {f.addIns(e);} | <LRB> (e=statement() {f.addIns(e);} <SEMICOLON>)+ <RRB> )
+    t=<ID> {f.name = t.toString();} <LRB> (e=variable() {f.addParam(e);}(<COMMA> e=variable() {f.addParam(e);})*)? <RRB> <FASSIGN> (
+      e=statement() {f.addIns(e);} 
+    | <LRB> (e=statement() {f.addIns(e);} (<SEMICOLON> e=statement() {f.addIns(e);} )* <RRB> ))
     { return f; }
 }
 

@@ -113,8 +113,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp > res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 	public void visit(SupEqual n)
 	{
@@ -132,8 +134,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp >= res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 
 	public void visit(Inf n) 
@@ -152,8 +156,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp < res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 	public void visit(InfEqual n)
 	{
@@ -171,8 +177,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp <= res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 
 	public void visit(Equal n)
@@ -191,8 +199,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp == res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 	public void visit(NonEqual n)
 	{
@@ -210,8 +220,10 @@ public class Eval extends Visitor
 			n.rhs.accept(this);
 			res = (temp != res)?1:0;
 			sRes = Double.toString(res);
-		} else
-		System.out.println("These types can not be operated together.");
+		} else {
+			res = 0;
+			System.out.println("These types can not be operated together.");
+		}
 	}
 
 	///////KEYWORDS///////
@@ -248,12 +260,12 @@ public class Eval extends Visitor
 	}
     public void visit(Function n)
     {
-    	Function f = scope.fGet(n.name);
+    	Function f = scope.functions.get(n.name);
     	f.bindParams(n);
-    	scope.setBindedFunction(f);
+    	scope.bindedFunction = f;
         for (Exp a : f.getIns()) {
             a.accept(this);
         }
-        scope.setBindedFunction(null);
+        scope.bindedFunction = null;
     }
 }

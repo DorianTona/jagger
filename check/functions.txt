@@ -1,0 +1,4 @@
+let function a()=print(1) in a() end
+let function a(a,b)=print(a+b) in a(2,2) end
+let function a(a)=a:=a var a:=1 in a(2), print(a) end
+let function a()=(print(1);print(2)) in a() end

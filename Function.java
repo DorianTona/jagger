@@ -7,8 +7,8 @@ public class Function extends Exp
 {
     public Scope parent;
     public String name;
-    private ArrayList<Exp> params;
-    private ArrayList<Exp> ins;
+    public ArrayList<Exp> params;
+    public ArrayList<Exp> ins;
     public HashMap<String,Exp> bindedParams;
 
     //constructor

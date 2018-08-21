@@ -5,10 +5,10 @@ import java.util.Set;
 public class Scope extends Exp
 {
     public Scope parent;
-    private HashMap<String, Exp> data;
-	private ArrayList<Exp> ins;
-    private HashMap<String, Function> functions;
-    private Function bindedFunction;
+    public HashMap<String, Exp> data;
+	public ArrayList<Exp> ins;
+    public HashMap<String, Function> functions;
+    public Function bindedFunction;
 
     //constructor
     public Scope(Scope s)
@@ -20,23 +20,25 @@ public class Scope extends Exp
     }
 
     //data
-    public Set<String> dataKeySet() { return data.keySet(); }
-    public boolean dataIsEmpty() { return data.isEmpty(); }
-    public Exp dataGet(String s) { return data.get(s); }
-
     public void addDeclaration(String s, Exp e)
     {
         Eval ev = new Eval(this);
         e.accept(ev);
         Num trueValue = new Num(ev.getRes());
-        data.putIfAbsent(s, trueValue);
+        if(!data.containsKey(s))
+            data.put(s, trueValue);
+        else
+            System.out.println("The variable " + s + " is already defined in the scope.");
     }
     public void changeValue(String s, Exp e)
     {
         Eval ev = new Eval(this);
         e.accept(ev);
         Num trueValue = new Num(ev.getRes());
-        data.remove(s);
+
+        if(data.containsKey(s))
+            data.remove(s);
+
         data.put(s, trueValue);
     }
     public Exp getInScope(String s)
@@ -46,12 +48,13 @@ public class Scope extends Exp
             if(bindedFunction.bindedParams.containsKey(s))
                 return bindedFunction.bindedParams.get(s);
 
+        //search for the variable in the current scope and its parents
         if(data.containsKey(s))
-            return dataGet(s);
+            return data.get(s);
         else if(parent != null)            
             return parent.getInScope(s);
         else{
-            System.out.println("This variable does not exist in current scope");
+            System.out.println("The variable " + s + " does not exist in current scope");
             return null;
         }
     }
@@ -67,22 +70,17 @@ public class Scope extends Exp
     }
 
     //functions
-    public Set<String> fKeySet() { return functions.keySet(); }
-    public boolean fIsEmpty() { return functions.isEmpty(); }
-    public Function fGet(String s) { return functions.get(s); }
-    public void setBindedFunction(Function f) { bindedFunction = f; }
-
     public void addFunction(Function f)
     {
         functions.putIfAbsent(f.name, f);
     }
 
-    public Exp fGetInScope(String s)
+    public Exp getFunctionInScope(String s)
     {
         if(functions.containsKey(s))
-            return fGet(s);
+            return functions.get(s);
         else
-            return parent.fGetInScope(s);
+            return parent.getFunctionInScope(s);
     }
     
     //visitor

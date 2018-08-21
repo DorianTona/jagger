@@ -183,16 +183,16 @@ public class PrettyPrinter extends Visitor
 		nbOfScope++;
 		System.out.println("let");
 		//variables
-		if(!s.dataIsEmpty())
-			for (String entry : scope.dataKeySet()) {
+		if(!s.data.isEmpty())
+			for (String entry : scope.data.keySet()) {
 				indentScope(nbOfScope); System.out.print("var "+ entry + " := ");
 				scope.getInScope(entry).accept(this);
 				System.out.println();
 			}
 		//functions
-		if(!s.fIsEmpty())
-			for (String entry : scope.fKeySet()) {
-				Function f = (Function)scope.fGetInScope(entry);
+		if(!s.functions.isEmpty())
+			for (String entry : scope.functions.keySet()) {
+				Function f = (Function)scope.getFunctionInScope(entry);
 				indentScope(nbOfScope); System.out.print("function ");
 				f.accept(this);
 				System.out.print(" = ");
